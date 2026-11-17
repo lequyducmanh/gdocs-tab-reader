@@ -32,7 +32,13 @@ Trang được viết để chạy như một **Claude artifact**. Đọc trực
 - Kết nối **Google Docs** và **Google Drive** trong claude.ai → Settings → Connectors.
 - Artifact khai báo các capability: `mcp` (Google Docs: `read_doc`; Google Drive: `search_files`, `get_file_metadata`, `download_file_content`, `read_file_content`), `db`, `user`.
 
-Mở `index.html` ở nơi khác (ví dụ một máy chủ tĩnh) thì trang vẫn hiển thị tài liệu gốc từ `snapshot.json`. Tuy nhiên sẽ không có cập nhật trực tiếp và không xem trước được file Drive.
+### Bản GitHub Pages
+
+Mở trang ngoài Claude (ví dụ GitHub Pages) thì:
+- Tài liệu gốc hiển thị từ `snapshot.json`, vẫn có tìm kiếm, lịch ngày và thư viện tài nguyên.
+- Link mở xổ xuống bằng **trình xem nhúng của Google** (Drive, Docs, Sheets, Slides) và của YouTube, Canva, Facebook. Người xem cần đăng nhập Google có quyền xem file.
+- Không tự cập nhật tab mới, vì cần connector của Claude. Muốn cập nhật thì tạo lại `snapshot.json` rồi đẩy lên.
+- Link Google Docs khác dán vào sẽ hiện bằng trình xem của Google, không có tìm kiếm trên mọi tab.
 
 ### Tạo lại bản lưu
 

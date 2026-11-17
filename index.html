@@ -231,6 +231,11 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 .pv:fullscreen { overflow: auto; border-radius: 0; background: var(--panel); }
 .pv:fullscreen .pv-b { max-height: none; }
 .pv:fullscreen img.pv-img { max-height: 88vh; }
+.emb { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: var(--sunken); border: 1px solid var(--line); }
+.emb iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+.emb.fb { max-width: 520px; height: 640px !important; margin: 0 auto; }
+.pv:fullscreen .emb { height: calc(100vh - 110px) !important; aspect-ratio: auto !important; max-width: none; }
+.docframe { height: calc(100vh - 200px); min-height: 520px; }
 .fl { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
 .pv, .pv-b, .pv-h { min-width: 0; }
 .view-box { position: relative; overflow: auto; border-radius: 10px; background: var(--sunken); max-height: 74vh; }
@@ -830,6 +835,10 @@ function tabToText(tab) {
 /* ---------- views ---------- */
 function renderMain(keep) {
   const main = $("main"), prevTop = main.scrollTop;
+  if (!S.model && !IN_CLAUDE && DOC_ID !== DEFAULT_DOC.id) {
+    main.innerHTML = `<div class="page wide"><nav class="crumbs"><span>Xem bằng trình xem của Google</span></nav><h1 class="ttl">${esc(libName(DOC_ID))}</h1><p class="lead">Ngoài Claude, trang hiển thị tài liệu bằng trình xem của Google. Tìm kiếm trên mọi tab và lịch ngày chỉ có khi mở trang trong Claude.</p><div style="height:14px"></div><div class="emb docframe"><iframe src="https://docs.google.com/document/d/${esc(DOC_ID)}/preview" title="${esc(libName(DOC_ID))}" loading="lazy"></iframe></div></div>`;
+    return;
+  }
   if (!S.model) {
     const fail = S.live.state === "error" || S.live.state === "none";
     main.innerHTML = `<div class="page"><h1 class="ttl">${esc(libName(DOC_ID))}</h1>${fail ? `<div class="paper"><p class="note">${esc(S.live.note || "Chưa mở được tài liệu này.")}</p><div class="pv-acts"><a class="btn pri" target="_blank" rel="noopener" href="${esc(docUrl(DOC_ID))}">Mở trên Google Docs</a><button class="btn" type="button" data-act="lib">Chọn tài liệu khác</button></div></div>` : '<p class="note"><span class="spin">Đang đọc tài liệu từ Google Docs, tài liệu lớn có thể mất vài giây…</span></p>'}</div>`;
@@ -970,6 +979,23 @@ const LIM = { image: 25e6, pdf: 40e6, video: 60e6, audio: 30e6 };
 const READABLE = /^(text\/|application\/(msword|vnd\.openxmlformats|vnd\.oasis|x-vnd\.oasis|rtf))/;
 const TYPE_LABEL = { folder: "Thư mục Google Drive", gdoc: "Google Docs", gsheet: "Google Sheets", gslide: "Google Slides", file: "File trên Google Drive" };
 let mcpP;
+/* Outside Claude (e.g. GitHub Pages) there are no connectors, but the page may embed Google's own viewers. */
+const IN_CLAUDE = !!(window.claude && window.claude.use);
+function embedOf(url, d) {
+  if (d) return { folder: `https://drive.google.com/embeddedfolderview?id=${d.id}#grid`, gdoc: `https://docs.google.com/document/d/${d.id}/preview`, gsheet: `https://docs.google.com/spreadsheets/d/${d.id}/preview`, gslide: `https://docs.google.com/presentation/d/${d.id}/embed`, file: `https://drive.google.com/file/d/${d.id}/preview` }[d.t];
+  let m;
+  if ((m = url.match(/(?:youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([\w-]{6,})/))) return `https://www.youtube.com/embed/${m[1]}`;
+  if ((m = url.match(/canva\.com\/design\/([\w-]+)\/([\w-]+)/))) return `https://www.canva.com/design/${m[1]}/${m[2]}/view?embed`;
+  if ((m = url.match(/tiktok\.com\/@[^/]+\/video\/(\d+)/))) return `https://www.tiktok.com/embed/v2/${m[1]}`;
+  if (/facebook\.com\/.+\/(posts|videos|permalink)|facebook\.com\/(permalink|story)\.php|facebook\.com\/share\//.test(url)) return `https://www.facebook.com/plugins/post.php?href=${encodeURIComponent(url)}&show_text=true&width=500`;
+  return null;
+}
+function pvEmbed(panel, src, kind) {
+  const s = panel._spec, d = driveIdOf(s.url || "");
+  const tall = d && d.t === "folder" ? "480px" : kind === "video" && !d ? "auto" : "74vh";
+  const ratio = kind === "video" && !d ? "aspect-ratio:16/9;" : "";
+  pvBody(panel).innerHTML = `<div class="emb${/facebook/.test(src) ? " fb" : ""}" style="${ratio}height:${tall}"><iframe src="${esc(src)}" title="${esc(s.title)}" loading="lazy" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><p class="pv-msg" style="font-size:12px;margin-top:8px">${d ? "Trình xem của Google Drive. Nếu không hiện, có thể tài khoản Google trên trình duyệt này chưa có quyền xem file." : "Nếu nội dung không hiện, có thể bài/video không công khai, hãy mở ở tab mới."}</p>`;
+}
 const getMcp = () => (mcpP = mcpP || (window.claude && claude.use ? claude.use("mcp").catch(() => null) : Promise.resolve(null)));
 function kindOfMime(mime, t) {
   if (t === "folder" || /folder/.test(mime || "")) return "folder";
@@ -995,10 +1021,12 @@ function pvToggle(btn) {
   const panel = document.createElement("div");
   panel.className = "pv"; panel._btn = btn; panel._urls = []; panel._spec = spec;
   const sub = drive ? (spec.size ? `${TYPE_LABEL[spec.t]} · ${fmtSize(spec.size)}` : TYPE_LABEL[spec.t]) : KL[kind] + " · " + hostOf(url);
-  panel.innerHTML = `<div class="pv-h">${tile(kind)}<div class="pv-t"><b>${esc(spec.title)}</b><small>${esc(sub)}</small></div>${drive ? `<button class="ib" type="button" data-pvact="fs" title="Toàn màn hình">${svg(I.full)}</button>` : ""}<button class="ib" type="button" data-pvact="copy" title="Sao chép link">${svg(I.copy)}</button><a class="ib" target="_blank" rel="noopener" href="${esc(url)}" title="Mở trong tab mới">${svg(I.ext)}</a><button class="ib" type="button" data-pvact="close" title="Thu gọn">${svg(I.x)}</button></div><div class="pv-b"></div>`;
+  panel.innerHTML = `<div class="pv-h">${tile(kind)}<div class="pv-t"><b>${esc(spec.title)}</b><small>${esc(sub)}</small></div>${drive || (!IN_CLAUDE && embedOf(url, null)) ? `<button class="ib" type="button" data-pvact="fs" title="Toàn màn hình">${svg(I.full)}</button>` : ""}<button class="ib" type="button" data-pvact="copy" title="Sao chép link">${svg(I.copy)}</button><a class="ib" target="_blank" rel="noopener" href="${esc(url)}" title="Mở trong tab mới">${svg(I.ext)}</a><button class="ib" type="button" data-pvact="close" title="Thu gọn">${svg(I.x)}</button></div><div class="pv-b"></div>`;
   host.after(panel);
   btn._panel = panel; btn.setAttribute("aria-expanded", "true");
-  if (drive) pvLoad(panel, false); else pvExternal(panel, kind);
+  const emb = IN_CLAUDE ? null : embedOf(url, drive);
+  if (emb) pvEmbed(panel, emb, kind);
+  else if (drive) pvLoad(panel, false); else pvExternal(panel, kind);
 }
 function pvClose(panel) {
   [panel, ...panel.querySelectorAll(".pv")].forEach((p) => (p._urls || []).forEach((u) => { try { URL.revokeObjectURL(u); } catch (e) {} }));
@@ -1511,7 +1539,7 @@ async function pushDb(model) {
 const DENIALS = new Set(["needs_reauth", "server_not_connected", "selection_required", "blocked_by_policy", "approval_required", "not_in_manifest", "server_not_found", "consent_required"]);
 function startLive() {
   getMcp().then((mcp) => {
-    if (!mcp) { S.live.state = DOC_ID === DEFAULT_DOC.id ? "idle" : "none"; S.live.note = DOC_ID === DEFAULT_DOC.id ? "Đang xem bản đồng bộ. Cập nhật trực tiếp cần mở trang trong Claude với Google Docs connector." : "Để đọc tài liệu này, hãy mở trang bên trong Claude và kết nối Google Docs."; renderStatus(); if (!S.model) renderMain(); return; }
+    if (!mcp) { if (!IN_CLAUDE && DOC_ID !== DEFAULT_DOC.id) { S.live.state = "none"; S.live.note = "Xem bằng trình xem của Google"; renderStatus(); renderMain(); return; } S.live.state = DOC_ID === DEFAULT_DOC.id ? "idle" : "none"; S.live.note = DOC_ID === DEFAULT_DOC.id ? "Đang xem bản đồng bộ. Cập nhật trực tiếp cần mở trang trong Claude với Google Docs connector." : "Để đọc tài liệu này, hãy mở trang bên trong Claude và kết nối Google Docs."; renderStatus(); if (!S.model) renderMain(); return; }
     S.mcp = mcp; S.live.state = "loading"; renderStatus();
     const id = DOC_ID;
     if (S.unwatch) { try { S.unwatch(); } catch (e) {} }
