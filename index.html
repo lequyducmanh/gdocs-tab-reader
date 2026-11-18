@@ -316,11 +316,11 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 .snip:hover { background: var(--sunken); border-left-color: var(--accent); }
 
 /* ---------- Toast / modal ---------- */
-.toast { position: fixed; right: 22px; bottom: 22px; z-index: 30; background: #10181f; color: #eef3f6; border-radius: 14px; padding: 12px 14px 12px 18px; display: flex; align-items: center; gap: 12px; max-width: min(480px, calc(100% - 44px)); box-shadow: 0 18px 40px -14px rgba(0,0,0,.5); font-size: 14px; animation: drop .2s ease-out; }
+.toast { position: fixed; right: 22px; bottom: 22px; z-index: 60; background: #10181f; color: #eef3f6; border-radius: 14px; padding: 12px 14px 12px 18px; display: flex; align-items: center; gap: 12px; max-width: min(480px, calc(100% - 44px)); box-shadow: 0 18px 40px -14px rgba(0,0,0,.5); font-size: 14px; animation: drop .2s ease-out; }
 .toast[hidden] { display: none; }
 .toast .btn { height: 30px; background: var(--side-gold); color: #1d1606; border-color: transparent; }
 .toast .x { border: 0; background: none; color: inherit; opacity: .6; font-size: 20px; line-height: 1; padding: 0 2px; }
-.modal { position: fixed; inset: 0; background: rgba(6, 14, 18, .5); display: grid; place-items: center; z-index: 40; padding: 20px; }
+.modal { position: fixed; inset: 0; background: rgba(6, 14, 18, .5); display: grid; place-items: center; z-index: 55; padding: 20px; }
 .modal[hidden] { display: none; }
 .modal .box { background: var(--panel); border-radius: 16px; padding: 20px; width: min(640px, 100%); display: grid; gap: 10px; }
 .modal textarea { width: 100%; height: 280px; border: 1px solid var(--line); border-radius: 10px; padding: 10px; font: 13px/1.5 var(--font-ui); background: var(--sunken); color: var(--ink); }
@@ -331,7 +331,8 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 .brand .bt b { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .brand .sw { display: inline-flex; align-items: center; gap: 4px; color: var(--side-gold); font-weight: 600; }
 .brand .sw svg { width: 12px; height: 12px; }
-.lib { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; gap: 16px; padding: 24px; }
+.lib { width: min(720px, 100%); max-height: calc(100vh - 40px); overflow: auto; gap: 16px; padding: 24px; grid-template-columns: minmax(0, 1fr); }
+.addf > * { min-width: 0; }
 .lib-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .lib-top h2 { font: 700 21px/1.2 var(--font-display); margin: 0; }
 .addf { display: grid; grid-template-columns: 1fr 220px auto; gap: 10px; align-items: end; padding: 16px; border-radius: 14px; background: var(--sunken); border: 1px solid var(--line); }
@@ -349,7 +350,7 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 .apibox summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
 .apibox[open] summary { margin-bottom: 8px; }
 .lib-h { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
-.dl { display: grid; gap: 8px; }
+.dl { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
 .drow { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); }
 .drow.cur { border-color: var(--accent); background: var(--accent-soft); }
 .dmark { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font: 700 15px/1 var(--font-display); background: var(--side-bg); color: var(--side-gold); flex: none; }
@@ -466,6 +467,113 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 .prog small { color: var(--faint); font-size: 11.5px; display: flex; justify-content: space-between; gap: 10px; }
 .prog.done .prog-bar i::after { animation-duration: .9s; }
 
+/* ---------- link detection in the add form ---------- */
+.detect { grid-column: 1 / -1; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); font-size: 13px; min-width: 0; }
+.detect[hidden] { display: none; }
+.detect .tile { width: 28px; height: 28px; border-radius: 8px; }
+.detect .tile svg { width: 15px; height: 15px; }
+.detect .dt { flex: 1; min-width: 0; }
+.detect .dt b { display: block; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detect .dt small { display: block; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detect.bad { border-color: color-mix(in oklab, #c2410c 45%, var(--line)); }
+.detect.bad .dt b { color: #c2410c; }
+.ktag { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11.5px; font-weight: 600; background: var(--accent-soft); color: var(--accent); white-space: nowrap; }
+.ktag.fd { background: var(--gold-soft); color: var(--gold); }
+.libbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.libio { display: flex; gap: 6px; flex-wrap: wrap; }
+.dmark.fd { background: var(--gold-soft); color: var(--gold); }
+.dmark.fd svg { width: 19px; height: 19px; }
+.dinfo small .ktag { height: 18px; padding: 0 7px; font-size: 11px; margin-right: 4px; vertical-align: 1px; }
+.fcard .thumb { position: relative; }
+.fcard .thumb img { position: absolute; inset: 0; }
+
+/* ---------- folder mode ---------- */
+.fshort { display: none; gap: 6px; padding: 4px 12px 12px; }
+.app.fmode .shortcuts { display: none; }
+.app.fmode .fshort { display: grid; }
+.app.fmode #markAll { display: none; }
+.ftree .row .em svg { width: 14px; height: 14px; color: var(--side-gold); }
+.ftree .row .chev { flex: none; }
+.ftree .row .sp14 { width: 14px; flex: none; }
+.ftools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 18px 0 14px; }
+.ftools .filters { margin: 0; }
+.ftools .right { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.fsort { height: 32px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); padding: 0 8px; font-size: 12.5px; }
+.flist { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 6px; box-shadow: var(--shadow); }
+.fnode + .fnode, .fnode + .frow, .frow + .fnode, .frow + .frow, .fgrid + .fnode { border-top: 1px solid var(--line); }
+.frow { position: relative; display: flex; align-items: center; gap: 4px; border-radius: 10px; min-width: 0; }
+.frow:hover { background: var(--sunken); }
+.frow.sel { background: color-mix(in oklab, var(--gold-soft) 70%, transparent); }
+.fchk { display: grid; place-items: center; width: 30px; height: 34px; flex: none; cursor: pointer; opacity: .35; transition: opacity .2s var(--ease); }
+.frow:hover .fchk, .frow.sel .fchk, .fcard:hover .fchk, .fcard.sel .fchk, .fsel-on .fchk { opacity: 1; }
+.fchk input { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; margin: 0; }
+.fbtn { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; border: 0; background: none; padding: 8px 10px 8px 2px; text-align: left; border-radius: 10px; color: var(--ink); }
+.fbtn .tile { width: 30px; height: 30px; border-radius: 8px; }
+.fbtn .tile svg { width: 15px; height: 15px; }
+.fbtn .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13.5px; font-weight: 500; }
+.fbtn small { color: var(--muted); font-size: 12px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.fbtn .fth { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; background: var(--sunken); flex: none; }
+.fbtn .path { display: block; color: var(--faint); font-size: 11.5px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fbtn .nmw { flex: 1; min-width: 0; display: grid; }
+.fbtn .nmw .nm { flex: none; }
+.fbtn:hover .nm { color: var(--accent); }
+.fdir .fbtn .nm { font-weight: 600; }
+.fdir .fv { width: 14px; height: 14px; color: var(--faint); transition: transform .2s var(--ease); flex: none; }
+.fdir .fbtn[aria-expanded="true"] .fv { transform: rotate(90deg); color: var(--gold); }
+.fdir .fbtn[aria-expanded="true"] .nm { color: var(--accent); }
+.fbtn .cv { width: 12px; height: 12px; color: var(--faint); transition: transform .18s; }
+.fbtn[aria-expanded="true"] .cv { transform: rotate(180deg); color: var(--accent); }
+.fkids { margin: 0 0 6px 21px; padding: 2px 0 2px 10px; border-left: 2px solid color-mix(in oklab, var(--gold) 30%, var(--line)); }
+.fkids > .pv-msg, .fkids > .spin { display: flex; padding: 8px 6px; }
+.fnode.flash > .frow { animation: flash 1.8s ease-out; }
+.fmore { padding: 6px 4px; }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; padding: 8px 4px; }
+.fgrid > .pv { grid-column: 1 / -1; margin: 0; }
+.fcard { position: relative; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; display: flex; flex-direction: column; }
+.fcard:hover { border-color: color-mix(in oklab, var(--gold) 45%, var(--line)); box-shadow: var(--lift); transform: translateY(-2px); }
+.fcard.sel { border-color: var(--gold); box-shadow: 0 0 0 2px var(--gold-soft); }
+.fcard .fbtn { flex-direction: column; align-items: stretch; gap: 0; padding: 0; border-radius: 0; }
+.fcard .thumb { aspect-ratio: 4 / 3; display: grid; place-items: center; background: var(--sunken); overflow: hidden; }
+.fcard .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.fcard .thumb .tile { width: 46px; height: 46px; border-radius: 12px; }
+.fcard .thumb .tile svg { width: 22px; height: 22px; }
+.fcard .cap { padding: 7px 9px 8px; display: grid; gap: 1px; }
+.fcard .cap .nm { font-size: 12.5px; white-space: nowrap; }
+.fcard .fchk { position: absolute; top: 4px; left: 4px; z-index: 1; width: 28px; height: 28px; border-radius: 8px; background: var(--panel); box-shadow: 0 1px 4px rgba(0,0,0,.18); }
+.fcard, .frow, .fbtn { transition: background-color .28s var(--ease), border-color .28s var(--ease), box-shadow .35s var(--ease), transform .35s var(--ease); }
+.fselbar { position: sticky; bottom: 14px; z-index: 5; margin: 18px auto 0; width: fit-content; max-width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 8px 8px 16px; border-radius: 14px; background: #10181f; color: #eef3f6; box-shadow: 0 18px 40px -14px rgba(0,0,0,.5); font-size: 13px; animation: drop .2s ease-out; }
+.fselbar[hidden] { display: none; }
+.fselbar .btn { height: 30px; background: rgba(255,255,255,.08); color: #eef3f6; border-color: rgba(255,255,255,.14); }
+.fselbar .btn.pri { background: var(--gold-grad); color: #2a1e06; border-color: transparent; }
+.fselbar .btn:hover { color: #fff; border-color: var(--side-gold); }
+.fselbar .btn.pri:hover { color: #2a1e06; }
+.fsearch-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 6px 0 12px; color: var(--muted); font-size: 13px; }
+.fback { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- lightbox ---------- */
+.lb { position: fixed; inset: 0; z-index: 45; background: rgba(4, 10, 14, .84); display: flex; justify-content: center; padding: 16px 70px; animation: lbIn .18s ease-out; }
+.lb[hidden] { display: none; }
+@keyframes lbIn { from { opacity: 0; } }
+.lb .pv { margin: 0; width: 100%; max-width: 1500px; display: flex; flex-direction: column; border-radius: 14px; box-shadow: 0 30px 80px -20px rgba(0,0,0,.65); animation: none; }
+.lb .pv-b { flex: 1; min-height: 0; max-height: none; display: flex; flex-direction: column; }
+.lb .pv-b > .pv-bar { flex: none; }
+.lb .view-box { flex: 1; min-height: 0; max-height: none; }
+.lb .view-box.fit { display: grid; place-items: center; }
+.lb .view-box.fit img.pv-img { max-height: calc(100vh - 150px); }
+.lb .pv-b video { max-height: calc(100vh - 130px); }
+.lb .emb { height: calc(100vh - 120px) !important; aspect-ratio: auto !important; max-width: none; }
+.lb .pv-b > .prog { margin: auto; width: min(480px, 100%); }
+.lb .pv-b > .spin, .lb .pv-b > .pv-msg { margin: auto; }
+.lb:fullscreen { padding: 0; }
+.lb:fullscreen .pv { border-radius: 0; max-width: none; }
+.lb-n { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; padding: 0 4px; }
+.lb-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.1); color: #fff; display: grid; place-items: center; z-index: 2; transition: background-color .25s var(--ease), transform .3s var(--ease); }
+.lb-nav svg { width: 22px; height: 22px; }
+.lb-nav:hover { background: rgba(230,182,94,.9); color: #1d1606; transform: translateY(-50%) scale(1.06); }
+.lb-nav:disabled { opacity: .2; cursor: default; background: rgba(255,255,255,.1); color: #fff; transform: translateY(-50%); }
+.lb-nav.prev { left: 12px; }
+.lb-nav.next { right: 12px; }
+
 @media (max-width: 900px) {
   .app { grid-template-columns: minmax(0, 1fr); }
   .side { position: fixed; z-index: 20; inset: 0 auto 0 0; width: min(320px, 88vw); transform: translateX(-102%); transition: transform .22s ease; box-shadow: 0 0 50px rgba(0,0,0,.35); }
@@ -483,6 +591,13 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
   .rrow .from, .fitem small { display: none; }
   #addBtn .lbl { display: none; }
   #addBtn { width: 38px; padding: 0; justify-content: center; }
+  .lb { padding: 0; }
+  .lb .pv { border-radius: 0; }
+  .lb-nav { top: auto; bottom: 16px; transform: none; background: rgba(0,0,0,.5); }
+  .lb-nav:hover, .lb-nav:disabled { transform: none; }
+  .fbtn small.meta { display: none; }
+  .fgrid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .fkids { margin-left: 10px; padding-left: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -492,14 +607,18 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 <body>
 <div class="app">
   <aside class="side" id="side" aria-label="Danh sách tab">
-    <button class="brand" id="docSwitch" type="button" title="Đổi tài liệu, dán link mới, xem lịch sử"><div class="mark" id="docMark">GG</div><div class="bt"><b id="docName">Đang mở…</b><small><span class="sw">Đổi tài liệu <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></small></div></button>
+    <button class="brand" id="docSwitch" type="button" title="Mở lịch sử, dán link tài liệu hoặc thư mục mới"><div class="mark" id="docMark">GG</div><div class="bt"><b id="docName">Đang mở…</b><small><span class="sw">Lịch sử · thêm link <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></small></div></button>
     <div class="shortcuts">
       <button class="sc" id="qLatest" type="button"><span class="sc-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><span><b id="qLatestT">Ngày mới nhất</b><small>Tab có nội dung gần nhất</small></span></button>
       <button class="sc" id="qLinks" type="button"><span class="sc-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span><b>Thư viện tài nguyên</b><small id="qLinksS">Drive, PDF, ảnh, video, bài đăng</small></span></button>
     </div>
+    <div class="fshort" id="fShort">
+      <button class="sc" id="fBack" type="button"><span class="sc-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 12h6M9 16h6"/></svg></span><span><b>Về tài liệu</b><small id="fBackS">Tài liệu đang mở</small></span></button>
+      <button class="sc" id="fRoot" type="button"><span class="sc-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span><span><b>Thư mục gốc</b><small>Thu gọn mọi cấp</small></span></button>
+    </div>
     <div class="side-label"><span id="tabCount">Tài liệu</span><button id="markAll" type="button" hidden>Đánh dấu đã xem</button></div>
     <nav class="tree" id="tree"></nav>
-    <div class="side-foot">Phím <b>/</b> tìm · <b>← →</b> chuyển tab · <b>[</b> ẩn thanh này</div>
+    <div class="side-foot" id="sideFoot">Phím <b>/</b> tìm · <b>← →</b> chuyển tab · <b>[</b> ẩn thanh này</div>
   </aside>
   <div class="scrim" id="scrim"></div>
   <div class="col">
@@ -511,7 +630,7 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
         <kbd>/</kbd>
       </label>
       <div class="status" id="status" data-s="loading"><span class="dot"></span><span class="st" id="statusText">Đang tải</span></div>
-      <button class="btn" id="addBtn" type="button" title="Dán link Google Docs khác"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Thêm link</span></button>
+      <button class="btn" id="addBtn" type="button" title="Dán link Google Docs hoặc thư mục Drive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Thêm link</span></button>
       <button class="ib" id="themeBtn" type="button" title="Chuyển sáng / tối" aria-label="Chuyển sáng / tối"></button>
       <button class="ib" id="refreshBtn" type="button" title="Kiểm tra bản mới trên Google Docs" aria-label="Làm mới"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
     </header>
@@ -520,15 +639,18 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
   </div>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Xem file"><button class="lb-nav prev" id="lbPrev" type="button" aria-label="File trước (←)" title="File trước (←)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button><div id="lbStage" style="display:contents"></div><button class="lb-nav next" id="lbNext" type="button" aria-label="File sau (→)" title="File sau (→)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button></div>
 <div class="modal" id="libModal" hidden><div class="box lib" role="dialog" aria-modal="true" aria-labelledby="libH">
-  <div class="lib-top"><h2 id="libH">Tài liệu của bạn</h2><button class="ib" type="button" id="libClose" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+  <div class="lib-top"><h2 id="libH">Tài liệu và thư mục của bạn</h2><button class="ib" type="button" id="libClose" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
   <form class="addf" id="addForm" autocomplete="off">
-    <label for="addUrl">Link Google Docs<input id="addUrl" type="text" inputmode="url" placeholder="https://docs.google.com/document/d/…"></label>
+    <label for="addUrl">Link Google Docs hoặc thư mục Drive<input id="addUrl" type="text" inputmode="url" placeholder="Dán link vào đây, trang tự nhận loại"></label>
     <label for="addName">Tên gợi nhớ<input id="addName" type="text" placeholder="Không bắt buộc"></label>
-    <button class="btn pri" type="submit">Mở tài liệu</button>
+    <button class="btn pri" type="submit" id="addGo">Mở</button>
+    <div class="detect" id="addDetect" hidden></div>
     <p class="adderr" id="addErr" role="alert"></p>
   </form>
   <div class="lib-h"><span>Lịch sử đã mở</span><span id="libCount"></span></div>
+  <div class="libbar"><div class="seg" id="libSeg" role="tablist"><button type="button" data-libf="all" aria-selected="true">Tất cả</button><button type="button" data-libf="doc" aria-selected="false">Tài liệu</button><button type="button" data-libf="folder" aria-selected="false">Thư mục</button></div><span class="libio"><button class="btn sm" type="button" id="libExport" title="Lưu danh sách ra file để chuyển sang máy khác">Xuất danh sách</button><button class="btn sm" type="button" id="libImport" title="Nạp danh sách từ file đã xuất">Nhập danh sách</button><input type="file" id="libFile" accept=".json,application/json" hidden></span></div>
   <div class="dl" id="libList"></div>
   <p class="libnote" id="libNote"></p>
   <div class="scanbox" id="scanBox2" hidden><div class="scan-t"><b>Cây thư mục cho bản web (GitHub Pages)</b><small>Quét để bản web mở được từng cấp thư mục ngay trong trang.</small></div><button class="btn pri" type="button" data-act="scan">Quét thư mục Drive</button></div>
@@ -552,6 +674,8 @@ const $ = (id) => document.getElementById(id);
 const gGet = (k, d) => { try { const v = localStorage.getItem(G + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
 const gSet = (k, v) => { try { localStorage.setItem(G + k, JSON.stringify(v)); } catch (e) {} };
 let DOC_ID = gGet("cur", DEFAULT_DOC.id);
+/* the page shows either a Google Doc (tabs) or a Drive folder (nested drop-downs) */
+let MODE = "doc";
 
 /* ---------- utils ---------- */
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -727,7 +851,7 @@ function choose() {
   const cur = S.route && S.route.tab;
   if (!prev || structure || S.query || S.route.view !== "tab" || oldHash[cur] !== (S.byId[cur] && S.byId[cur].hash)) renderMain(true);
   renderStatus();
-  if (prev) {
+  if (prev && MODE === "doc") {
     const added = best.tabs.filter((t) => !oldHash[t.id]);
     const changed = best.tabs.filter((t) => oldHash[t.id] && oldHash[t.id] !== t.hash);
     if (added.length) toast(`Vừa có ${added.length} tab mới: ${added.slice(0, 4).map((t) => t.title).join(", ")}${added.length > 4 ? "…" : ""}`, "Xem", () => go(added[0].id));
@@ -737,6 +861,7 @@ function choose() {
 
 /* ---------- status / banner / toast ---------- */
 function renderStatus() {
+  if (MODE === "folder") { fStatus(); return; }
   const m = S.model, src = S.modelSrc;
   let s = "snap", txt;
   if (!m) { s = "loading"; txt = "Đang tải"; }
@@ -767,6 +892,8 @@ function toast(msg, label, act) {
 
 /* ---------- sidebar ---------- */
 function renderSide() {
+  if (MODE === "folder") return;
+  if (!S.model) { $("tree").innerHTML = ""; $("tabCount").textContent = "Tài liệu"; $("markAll").hidden = true; return; }
   const top = S.kids[""] || [];
   const cur = S.route && S.route.view === "tab" ? S.route.tab : null;
   if (!S.open) { S.open = {}; top.forEach((id) => { S.open[id] = true; const ks = (S.kids[id] || []).filter((k) => (S.kids[k] || []).length); if (ks.length) S.open[ks[ks.length - 1]] = true; }); }
@@ -847,6 +974,7 @@ function tabToText(tab) {
 
 /* ---------- views ---------- */
 function renderMain(keep) {
+  if (MODE === "folder") return;
   const main = $("main"), prevTop = main.scrollTop;
   if (!S.model && !IN_CLAUDE && !HAS_API && DOC_ID !== DEFAULT_DOC.id) {
     main.innerHTML = `<div class="page wide"><nav class="crumbs"><span>Xem bằng trình xem của Google</span></nav><h1 class="ttl">${esc(libName(DOC_ID))}</h1><p class="lead">Ngoài Claude, trang hiển thị tài liệu bằng trình xem của Google. Tìm kiếm trên mọi tab và lịch ngày chỉ có khi mở trang trong Claude.</p><div style="height:14px"></div><div class="emb docframe"><iframe src="https://docs.google.com/document/d/${esc(DOC_ID)}/preview" title="${esc(libName(DOC_ID))}" loading="lazy"></iframe></div></div>`;
@@ -1039,24 +1167,41 @@ function openUrl(spec) {
   return { folder: `https://drive.google.com/drive/folders/${spec.id}`, gdoc: `https://docs.google.com/document/d/${spec.id}/edit`, gsheet: `https://docs.google.com/spreadsheets/d/${spec.id}/edit`, gslide: `https://docs.google.com/presentation/d/${spec.id}/edit` }[spec.t] || `https://drive.google.com/file/d/${spec.id}/view`;
 }
 const extBtn = (spec, pri) => `<a class="btn sm${pri ? " pri" : ""}" target="_blank" rel="noopener" href="${esc(openUrl(spec))}">${svg(I.ext)}Mở trong tab mới</a>`;
-function pvToggle(btn) {
-  if (btn._panel && btn._panel.isConnected) { pvClose(btn._panel); return; }
-  const url = btn.dataset.lk, drive = driveIdOf(url);
-  const host = btn.closest(".fitem, .rrow, .blk, .snip") || btn;
+/* spec of a link: { t: folder|gdoc|gsheet|gslide|file|ext, id, url, mime, size, title, modified } */
+function specOf(url, mime, size, title, modified) {
+  const drive = driveIdOf(url);
   const spec = drive ? { t: drive.t, id: drive.id } : { t: "ext" };
-  Object.assign(spec, { url, mime: btn.dataset.mime || "", size: +btn.dataset.size || 0, title: btn.dataset.title || "" });
-  const kind = drive ? kindOfMime(spec.mime, spec.t) : kindOf(url);
+  Object.assign(spec, { url, mime: mime || "", size: +size || 0, title: title || "", modified: modified || "" });
+  if (drive && spec.t === "file" && spec.mime) { const m = spec.mime; if (/google-apps\.folder/.test(m)) spec.t = "folder"; else if (/google-apps\.document/.test(m)) spec.t = "gdoc"; else if (/google-apps\.spreadsheet/.test(m)) spec.t = "gsheet"; else if (/google-apps\.presentation/.test(m)) spec.t = "gslide"; }
   if (!spec.title) spec.title = drive ? TYPE_LABEL[spec.t] : hostOf(url);
+  return spec;
+}
+const specKind = (spec) => (spec.t === "ext" ? kindOf(spec.url) : kindOfMime(spec.mime, spec.t));
+function pvMake(spec, lb) {
+  const kind = specKind(spec), drive = spec.t !== "ext", url = spec.url || openUrl(spec);
   const panel = document.createElement("div");
-  panel.className = "pv"; panel._btn = btn; panel._urls = []; panel._spec = spec;
-  const sub = drive ? (spec.size ? `${TYPE_LABEL[spec.t]} · ${fmtSize(spec.size)}` : TYPE_LABEL[spec.t]) : KL[kind] + " · " + hostOf(url);
-  panel.innerHTML = `<div class="pv-h">${tile(kind)}<div class="pv-t"><b>${esc(spec.title)}</b><small>${esc(sub)}</small></div>${drive || (!IN_CLAUDE && embedOf(url, null)) ? `<button class="ib" type="button" data-pvact="fs" title="Toàn màn hình">${svg(I.full)}</button>` : ""}<button class="ib" type="button" data-pvact="copy" title="Sao chép link">${svg(I.copy)}</button><a class="ib" target="_blank" rel="noopener" href="${esc(url)}" title="Mở trong tab mới">${svg(I.ext)}</a><button class="ib" type="button" data-pvact="close" title="Thu gọn">${svg(I.x)}</button></div><div class="pv-b"></div>`;
-  host.after(panel);
-  btn._panel = panel; btn.setAttribute("aria-expanded", "true");
+  panel.className = "pv"; panel._urls = []; panel._spec = spec; panel._lb = !!lb;
+  const sub = drive ? [TYPE_LABEL[spec.t], spec.size ? fmtSize(spec.size) : "", spec.modified ? "sửa " + fmtDate(spec.modified) : ""].filter(Boolean).join(" · ") : KL[kind] + " · " + hostOf(url);
+  const asFolder = spec.t === "folder" && !lb ? `<button class="btn sm" type="button" data-pvact="asfolder" title="Mở thư mục này toàn trang, có cây thư mục, lọc và tìm kiếm">${svg(I.full)}Mở toàn trang</button>` : "";
+  panel.innerHTML = `<div class="pv-h">${tile(kind)}<div class="pv-t"><b>${esc(spec.title)}</b><small>${esc(sub)}</small></div>${lb ? '<span class="lb-n"></span>' : ""}${asFolder}${drive || (!IN_CLAUDE && embedOf(url, null)) ? `<button class="ib" type="button" data-pvact="fs" title="Toàn màn hình">${svg(I.full)}</button>` : ""}<button class="ib" type="button" data-pvact="copy" title="Sao chép link">${svg(I.copy)}</button><a class="ib" target="_blank" rel="noopener" href="${esc(url)}" title="Mở trong tab mới">${svg(I.ext)}</a><button class="ib" type="button" data-pvact="close" title="${lb ? "Đóng (Esc)" : "Thu gọn"}">${svg(I.x)}</button></div><div class="pv-b"></div>`;
+  return panel;
+}
+function pvStart(panel) {
+  const spec = panel._spec, kind = specKind(spec), drive = spec.t === "ext" ? null : { t: spec.t, id: spec.id };
   if (!IN_CLAUDE && drive && !HAS_API) { pvOffline(panel, kind); return; }
-  const emb = IN_CLAUDE || (drive && HAS_API) ? null : embedOf(url, drive);
+  const emb = IN_CLAUDE || (drive && HAS_API) ? null : embedOf(spec.url || "", drive);
   if (emb) pvEmbed(panel, emb, kind);
   else if (drive) pvLoad(panel, false); else pvExternal(panel, kind);
+}
+function pvToggle(btn) {
+  if (btn._panel && btn._panel.isConnected) { pvClose(btn._panel); return; }
+  const spec = specOf(btn.dataset.lk, btn.dataset.mime, btn.dataset.size, btn.dataset.title, btn.dataset.mod);
+  const host = btn.closest(".fitem, .frow, .fcard, .rrow, .blk, .snip") || btn;
+  const panel = pvMake(spec, false);
+  panel._btn = btn;
+  host.after(panel);
+  btn._panel = panel; btn.setAttribute("aria-expanded", "true");
+  pvStart(panel);
 }
 /* Web build without a server: folders come from drive-index.json (a scan made from the Claude page) */
 let IDX = null, idxP = null;
@@ -1133,9 +1278,10 @@ function pvExternal(panel, kind) {
 function pvAction(b) {
   const panel = b.closest(".pv"); if (!panel) return;
   const act = b.dataset.pvact;
-  if (act === "close") pvClose(panel);
+  if (act === "close") { if (panel._lb) lbClose(); else pvClose(panel); }
   else if (act === "copy") copy(panel._spec.url || openUrl(panel._spec), "Đã sao chép link");
-  else if (act === "fs" || act === "zoom") { try { const r = document.fullscreenElement ? document.exitFullscreen() : panel.requestFullscreen(); if (r && r.catch) r.catch(() => toast("Trình duyệt không cho mở toàn màn hình ở đây")); } catch (e) { toast("Trình duyệt không cho mở toàn màn hình ở đây"); } }
+  else if (act === "fs" || act === "zoom") { const el = panel._lb ? $("lb") : panel; try { const r = document.fullscreenElement ? document.exitFullscreen() : el.requestFullscreen(); if (r && r.catch) r.catch(() => toast("Trình duyệt không cho mở toàn màn hình ở đây")); } catch (e) { toast("Trình duyệt không cho mở toàn màn hình ở đây"); } }
+  else if (act === "asfolder") { const s = panel._spec; openFolder(s.id, "", s.title !== TYPE_LABEL.folder ? s.title : "", MODE === "doc" ? DOC_ID : null); }
   else if (act === "retry") pvLoad(panel, false);
   else if (act === "force") pvLoad(panel, true);
   else if (act === "more") pvFolder(panel, b.dataset.token, b);
@@ -1202,7 +1348,7 @@ async function pvFile(panel, force) {
   if (/google-apps\.presentation/.test(m)) { const pg = progress(panel, 0, "Đang chuyển bản trình chiếu sang PDF"); const b = await dl(mcp, s.id, "application/pdf"); pg.done(`Đã nhận ${fmtMB(b.bytes.length)}, đang dựng trang…`); return pvPdf(panel, b.bytes); }
   const cat = /^image\/(png|jpe?g|gif|webp|bmp|svg\+xml|avif)$/.test(m) ? "image" : m === "application/pdf" ? "pdf" : /^video\//.test(m) ? "video" : /^audio\//.test(m) ? "audio" : null;
   if (cat) {
-    if (s.size > LIM[cat] && !force) { pvMsg(panel, `File này khá lớn (${fmtSize(s.size)}), tải để xem sẽ mất một lúc.`, `<button class="btn sm pri" type="button" data-pvact="force">Vẫn xem tại đây</button>${extBtn(s)}`); return; }
+    if (s.size > LIM[cat] && !force && !isCached(s.id)) { pvMsg(panel, `File này khá lớn (${fmtSize(s.size)}), tải để xem sẽ mất một lúc.`, `<button class="btn sm pri" type="button" data-pvact="force">Vẫn xem tại đây</button>${extBtn(s)}`); return; }
     const pg = progress(panel, s.size, cat === "pdf" ? "Đang tải PDF" : cat === "image" ? "Đang tải ảnh" : cat === "video" ? "Đang tải video" : "Đang tải file");
     const b = await dl(mcp, s.id);
     pg.done(cat === "pdf" ? "Đã tải xong, đang dựng trang PDF…" : cat === "video" ? "Đã tải xong, đang mở video…" : "Đã tải xong, đang hiển thị ảnh…");
@@ -1248,12 +1394,21 @@ function extractBinary(r) {
   if (p && typeof p === "object") for (const k of ["content", "data", "blob", "base64", "fileContent", "contentBase64"]) if (typeof p[k] === "string" && p[k].length > 8) return { bytes: b64bytes(p[k]), mime: p.mimeType };
   return null;
 }
+/* files already downloaded this session are kept in memory, so going back and forth in the viewer is instant */
+const BC = new Map(); let bcSize = 0;
 async function dl(mcp, id, exportMime) {
+  const key = id + "|" + (exportMime || "");
+  if (BC.has(key)) { const v = BC.get(key); BC.delete(key); BC.set(key, v); return v; }
   const args = { fileId: id }; if (exportMime) args.exportMimeType = exportMime;
   const b = extractBinary(await mcp.callTool(DRIVE, "download_file_content", args, { cache: false }));
   if (!b) throw { message: "Google Drive không trả về nội dung file" };
+  if (b.bytes.length < 80e6) {
+    BC.set(key, b); bcSize += b.bytes.length;
+    for (const [k, v] of BC) { if (bcSize <= 300e6) break; BC.delete(k); bcSize -= v.bytes.length; }
+  }
   return b;
 }
+const isCached = (id) => BC.has(id + "|");
 async function pvFolder(panel, token, moreBtn) {
   const s = panel._spec, args = { query: `parentId = '${s.id}'`, pageSize: 100, excludeContentSnippets: true };
   if (token) { args.pageToken = token; moreBtn.disabled = true; moreBtn.textContent = "Đang tải…"; } else pvSpin(panel, "Đang mở thư mục…");
@@ -1275,7 +1430,7 @@ async function pvFolder(panel, token, moreBtn) {
     const isF = /google-apps\.folder/.test(f.mimeType);
     const t = isF ? "folder" : /google-apps\.document/.test(f.mimeType) ? "gdoc" : /google-apps\.spreadsheet/.test(f.mimeType) ? "gsheet" : /google-apps\.presentation/.test(f.mimeType) ? "gslide" : "file";
     const url = isF ? `https://drive.google.com/drive/folders/${f.id}` : f.viewUrl || openUrl({ t, id: f.id });
-    return `<button class="fitem lk" data-lk="${esc(url)}" data-mime="${esc(f.mimeType || "")}" data-size="${esc(f.fileSize || "")}" data-title="${esc(f.title || "")}" aria-expanded="false" type="button">${tile(kindOfMime(f.mimeType, t))}<span class="nm">${esc(f.title || "Không tên")}</span><small>${isF ? "Thư mục" : fmtSize(f.fileSize)}${f.modifiedTime ? " · " + fmtDate(f.modifiedTime) : ""}</small>${svg(I.chev, "cv")}</button>`;
+    return `<button class="fitem lk" data-lk="${esc(url)}" data-mime="${esc(f.mimeType || "")}" data-size="${esc(f.fileSize || "")}" data-title="${esc(f.title || "")}" data-mod="${esc(f.modifiedTime || "")}" aria-expanded="false" type="button">${tile(kindOfMime(f.mimeType, t))}<span class="nm">${esc(f.title || "Không tên")}</span><small>${isF ? "Thư mục" : fmtSize(f.fileSize)}${f.modifiedTime ? " · " + fmtDate(f.modifiedTime) : ""}</small>${svg(I.chev, "cv")}</button>`;
   }).join(""));
   if (p.nextPageToken) list.insertAdjacentHTML("afterend", `<div class="pv-acts"><button class="btn sm" type="button" data-pvact="more" data-token="${esc(p.nextPageToken)}">Tải thêm</button></div>`);
   const nf = panel._files.filter((f) => /folder/.test(f.mimeType)).length;
@@ -1387,7 +1542,7 @@ document.addEventListener("fullscreenchange", () => document.querySelectorAll(".
 async function pvPdf(panel, bytes) {
   if (!pvBody(panel).querySelector(".prog")) pvSpin(panel, "Đang dựng trang PDF…");
   await loadPdfJs();
-  const pdf = await window.pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise;
+  const pdf = await window.pdfjsLib.getDocument({ data: bytes.slice(), isEvalSupported: false }).promise;
   const body = pvBody(panel);
   body.innerHTML = `<div class="pv-bar"><span><span class="pc"></span> · <span class="zhint">chụm 2 ngón để zoom · kéo để di chuyển · bấm đúp để phóng</span></span>${zoomBar()}</div><div class="view-box fit"><div class="pv-pages"></div></div><div class="pv-acts pm"></div>`;
   panel._zoomKind = "pdf"; panel._z = 1;
@@ -1571,6 +1726,7 @@ function parseHash() {
 function setHash(name) { if (location.hash.slice(1) !== name) { try { history.replaceState(null, "", "#" + name); } catch (e) { location.hash = name; } } }
 function go(id, block, terms) {
   if (!id) return;
+  if (MODE === "folder") setMode("doc");
   clearSearch(true);
   S.hl = block !== undefined ? { block, terms: terms || [] } : null;
   if (!S.route || S.route.tab !== id) S.view = "content";
@@ -1582,6 +1738,9 @@ function go(id, block, terms) {
 }
 function goLinks() { clearSearch(true); S.route = { view: "links" }; setHash("links"); closeSide(); renderSide(); renderMain(); }
 function onHash() {
+  const fh = /^f-([\w-]{10,})$/.exec(location.hash.slice(1));
+  if (fh) { if (!(MODE === "folder" && F && F.id === fh[1])) openFolder(fh[1]); return; }
+  if (MODE === "folder") return;
   const r = parseHash();
   if (S.route && r.view === S.route.view && r.tab === S.route.tab) return;
   S.route = r; if (r.tab) lsSet("last", r.tab); S.view = "content";
@@ -1590,9 +1749,11 @@ function onHash() {
 
 /* ---------- search ---------- */
 let qTimer;
-$("q").addEventListener("input", () => { clearTimeout(qTimer); qTimer = setTimeout(() => { S.query = $("q").value; if (S.model) renderMain(); }, 140); });
+$("q").addEventListener("input", () => { clearTimeout(qTimer); qTimer = setTimeout(() => { if (MODE === "folder") { if (F) { F.q = $("q").value; renderFolder(); } return; } S.query = $("q").value; if (S.model) renderMain(); }, 140); });
 $("q").addEventListener("keydown", (e) => { if (e.key === "Escape") { clearSearch(); $("q").blur(); } });
-function clearSearch(silent) { if (!S.query && !$("q").value) return; $("q").value = ""; S.query = ""; if (!silent && S.model) renderMain(); }
+function clearSearch(silent) {
+  if (MODE === "folder") { if (F && (F.q || $("q").value)) { $("q").value = ""; F.q = ""; if (!silent) renderFolder(); } return; }
+  if (!S.query && !$("q").value) return; $("q").value = ""; S.query = ""; if (!silent && S.model) renderMain(); }
 
 /* ---------- clipboard ---------- */
 function copy(text, ok) {
@@ -1605,7 +1766,7 @@ $("copyModal").addEventListener("click", (e) => { if (e.target === $("copyModal"
 /* ---------- events ---------- */
 document.addEventListener("click", (e) => {
   const lk = e.target.closest("[data-lk]");
-  if (lk) { e.preventDefault(); pvToggle(lk); return; }
+  if (lk) { e.preventDefault(); if (lk.classList.contains("fitem") && lbFromFitem(lk)) return; pvToggle(lk); return; }
   const pb = e.target.closest("[data-pvact]");
   if (pb) { e.preventDefault(); pvAction(pb); return; }
   const el = e.target.closest("[data-go],[data-goblock],[data-toggle],[data-act],[data-kind],[data-view]");
@@ -1636,7 +1797,7 @@ document.addEventListener("keydown", (e) => {
   const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement && document.activeElement.tagName);
   if (e.key === "/" && !typing) { e.preventDefault(); $("q").focus(); $("q").select(); return; }
   if (e.key === "Escape" && !$("copyModal").hidden) { $("copyModal").hidden = true; return; }
-  if (typing || e.metaKey || e.ctrlKey || e.altKey || !S.model || S.query || !S.route || S.route.view !== "tab") return;
+  if (typing || e.metaKey || e.ctrlKey || e.altKey || MODE !== "doc" || !S.model || S.query || !S.route || S.route.view !== "tab") return;
   const i = S.order.indexOf(S.route.tab);
   if (e.key === "ArrowRight" && S.order[i + 1]) go(S.order[i + 1]);
   if (e.key === "ArrowLeft" && S.order[i - 1]) go(S.order[i - 1]);
@@ -1680,7 +1841,6 @@ function startDb() {
     S.db = db;
     if (S.dbUnsub) { try { S.dbUnsub(); } catch (e) {} S.dbUnsub = null; }
     claude.use("user").then((u) => { if (u && u.can) u.can("data.write").then((v) => { if (v === false) S.canWrite = false; }, () => {}); }, () => {});
-    startLibSync(db);
     loadScanState();
     const id = DOC_ID;
     S.dbUnsub = db.doc(syncPath()).onSnapshot((snap) => {
@@ -1794,70 +1954,75 @@ function startApiLive() {
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && S.apiRun) S.apiRun(); });
 $("refreshBtn").onclick = () => {
+  if (MODE === "folder") { if (F) { fStatus(); fRefresh(); } return; }
   if (S.apiRun && HAS_API) { S.live.state = "loading"; renderStatus(); S.apiRun(true); return; }
   if (S.mcp) { S.live.state = "loading"; renderStatus(); S.mcp.invalidate(DOCS, "read_doc").catch(requestOnce); }
   else if (S.dbMeta) { pullDb(); toast("Đã kiểm tra bản đồng bộ mới nhất"); }
   else toast(S.live.note || "Đang xem bản lưu.");
 };
 
-/* ---------- documents library: paste a link, keep a named history ---------- */
-const LIB = { db: {}, local: gGet("lib", {}), dbOn: false };
-function docIdFrom(s) {
-  s = (s || "").trim();
-  let m = s.match(/docs\.google\.com\/document\/(?:u\/\d+\/)?d\/([\w-]{20,})/);
-  if (m) return m[1];
-  if (/^[\w-]{25,}$/.test(s)) return s;
-  return null;
-}
+/* ---------- library: paste a link (document or folder), history kept in this browser only ---------- */
+const LIB = { local: gGet("lib", {}), f: "all" };
+const folderUrl = (id) => `https://drive.google.com/drive/folders/${id}`;
+const entType = (e) => (e && e.type === "folder" ? "folder" : "doc");
 function libEntries() {
   const map = {};
-  map[DEFAULT_DOC.id] = { id: DEFAULT_DOC.id, name: DEFAULT_DOC.name, title: DEFAULT_DOC.title, lastOpened: 0, builtin: true };
-  [LIB.local, LIB.db].forEach((src) => Object.values(src).forEach((e) => { if (e && e.id) map[e.id] = Object.assign({}, map[e.id], e); }));
-  return Object.values(map).filter((e) => !e.hidden).sort((a, b) => (b.lastOpened || 0) - (a.lastOpened || 0));
+  Object.values(LIB.local).forEach((e) => { if (e && e.id) map[e.id] = Object.assign({}, e); });
+  map[DEFAULT_DOC.id] = Object.assign({ id: DEFAULT_DOC.id, name: DEFAULT_DOC.name, title: DEFAULT_DOC.title, lastOpened: 0 }, map[DEFAULT_DOC.id] || {}, { type: "doc", builtin: true, hidden: false });
+  return Object.values(map).filter((e) => !e.hidden).sort((a, b) => (b.builtin ? 1 : 0) - (a.builtin ? 1 : 0) || (b.lastOpened || 0) - (a.lastOpened || 0));
 }
-function libName(id) { const e = libEntries().find((x) => x.id === id) || {}; return e.name || e.title || (id === DOC_ID && S.model && S.model.title) || "Tài liệu Google Docs"; }
+function libName(id) {
+  const e = libEntries().find((x) => x.id === id) || {};
+  return e.name || e.title || (id === DOC_ID && S.model && S.model.title) || (entType(e) === "folder" ? "Thư mục Drive" : "Tài liệu Google Docs");
+}
 function initials(name) {
   const w = (name || "?").replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((x) => x && x.length > 1 || /\d/.test(x));
   return ((w[0] || "?").charAt(0) + (w[1] || "").charAt(0)).toUpperCase();
 }
-function canShare() { return LIB.dbOn && S.db && S.canWrite !== false; }
-async function libSave(id, patch) {
-  const cur = libEntries().find((e) => e.id === id) || { id };
-  const next = Object.assign({ id, url: docUrl(id) }, cur, patch); delete next.builtin;
+function libSave(id, patch) {
+  const cur = LIB.local[id] || libEntries().find((e) => e.id === id) || { id };
+  const type = patch.type || cur.type || "doc";
+  const next = Object.assign({}, cur, patch, { id, type, url: type === "folder" ? folderUrl(id) : docUrl(id) });
+  delete next.builtin;
   LIB.local[id] = next; gSet("lib", LIB.local);
-  if (canShare()) { try { await S.db.doc("library/" + id).set(next); } catch (e) { if (e && e.code === "invalid_argument") S.canWrite = false; } }
   renderBrand(); if (!$("libModal").hidden) renderLib();
 }
 function learnTitle(id, title) { if (!title) return; const e = libEntries().find((x) => x.id === id); if (!e || e.title !== title) libSave(id, { title }); }
-function startLibSync(db) {
-  if (LIB.sub) return;
-  LIB.sub = db.collection("library").onSnapshot((snap) => {
-    LIB.dbOn = true; LIB.db = {};
-    snap.docs.forEach((d) => { const v = d.data(); if (v && v.id) LIB.db[v.id] = v; });
-    renderBrand(); if (!$("libModal").hidden) renderLib();
-  }, () => {});
-}
+const fName = () => (F ? libName(F.id) : "");
 function renderBrand() {
-  const name = libName(DOC_ID);
+  const name = MODE === "folder" && F ? fName() : libName(DOC_ID);
   $("docName").textContent = name; $("docMark").textContent = initials(name);
   document.title = name + " · Kho tài liệu";
 }
 function openLib() { $("libModal").hidden = false; $("addErr").textContent = ""; renderLib(); setTimeout(() => $("addUrl").focus(), 30); }
 function closeLib() { $("libModal").hidden = true; }
+const isCurrent = (e) => (entType(e) === "folder" ? MODE === "folder" && F && F.id === e.id : MODE === "doc" && e.id === DOC_ID);
+const PEN = '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/>';
+const BIN = '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>';
 function renderLib() {
-  const list = libEntries();
-  $("libCount").textContent = list.length + " tài liệu";
-  $("libList").innerHTML = list.map((e) => {
-    const nm = e.name || e.title || "Tài liệu Google Docs", sub = [e.name && e.title && e.title !== e.name ? e.title : "", e.lastOpened ? "Mở lần cuối " + fmtTime(e.lastOpened) : "Chưa mở"].filter(Boolean).join(" · ");
-    return `<div class="drow${e.id === DOC_ID ? " cur" : ""}" data-doc="${esc(e.id)}"><div class="dmark">${esc(initials(nm))}</div><div class="dinfo"><b>${esc(nm)}</b><small>${esc(sub)}</small></div><div class="btns">${e.id === DOC_ID ? '<span class="tag upd">Đang mở</span>' : `<button class="btn sm pri" type="button" data-libact="open">Mở</button>`}<button class="ib keep" type="button" data-libact="rename" title="Đổi tên">${svg('<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/>')}</button><button class="ib" type="button" data-libact="copy" title="Sao chép link">${svg(I.link)}</button>${e.id === DOC_ID ? "" : `<button class="ib danger" type="button" data-libact="del" title="Xoá khỏi lịch sử">${svg('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/>')}</button>`}</div></div>`;
-  }).join("");
-  $("libNote").textContent = canShare() ? "Danh sách này lưu chung cho trang, ai được chia sẻ trang đều thấy và mở lại được." : "Danh sách này đang lưu trên trình duyệt của bạn.";
+  const all = libEntries(), list = all.filter((e) => LIB.f === "all" || entType(e) === LIB.f);
+  const nf = all.filter((e) => entType(e) === "folder").length;
+  $("libCount").textContent = `${all.length - nf} tài liệu · ${nf} thư mục`;
+  $("libSeg").querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.libf === LIB.f)));
+  $("libList").innerHTML = list.length ? list.map((e) => {
+    const fd = entType(e) === "folder", nm = e.name || e.title || (fd ? "Thư mục Drive" : "Tài liệu Google Docs"), cur = isCurrent(e);
+    const sub = [e.name && e.title && e.title !== e.name ? e.title : "", e.builtin ? "Ghim sẵn" : "", e.lastOpened ? "Mở lần cuối " + fmtTime(e.lastOpened) : "Chưa mở"].filter(Boolean).join(" · ");
+    return `<div class="drow${cur ? " cur" : ""}" data-doc="${esc(e.id)}"><div class="dmark${fd ? " fd" : ""}">${fd ? svg(P.folder) : esc(initials(nm))}</div><div class="dinfo"><b>${esc(nm)}</b><small><span class="ktag${fd ? " fd" : ""}">${fd ? "Thư mục" : "Tài liệu"}</span> ${esc(sub)}</small></div><div class="btns">${cur ? '<span class="tag upd">Đang mở</span>' : `<button class="btn sm pri" type="button" data-libact="open">Mở</button>`}<button class="ib keep" type="button" data-libact="rename" title="Đổi tên">${svg(PEN)}</button><button class="ib" type="button" data-libact="copy" title="Sao chép link">${svg(I.link)}</button>${cur || e.builtin ? "" : `<button class="ib danger" type="button" data-libact="del" title="Xoá khỏi lịch sử">${svg(BIN)}</button>`}</div></div>`;
+  }).join("") : `<p class="libnote">Chưa có ${LIB.f === "folder" ? "thư mục" : "tài liệu"} nào trong lịch sử. Dán link vào ô bên trên để bắt đầu.</p>`;
+  $("libNote").textContent = "Lịch sử chỉ lưu trên trình duyệt bạn đang dùng, người khác không thấy. Dùng “Xuất danh sách” để mang sang máy khác hoặc gửi bộ link cho đồng nghiệp.";
 }
+function openEntry(id) { const e = libEntries().find((x) => x.id === id); if (!e) return; if (entType(e) === "folder") openFolder(id); else openDoc(id); }
 function openDoc(id, name, title) {
-  closeLib();
+  closeLib(); lbClose();
   if (!id) return;
-  libSave(id, Object.assign({ lastOpened: Date.now() }, name ? { name } : {}, title ? { title } : {}));
-  if (id === DOC_ID && S.model) { toast("Tài liệu này đang mở"); return; }
+  libSave(id, Object.assign({ type: "doc", lastOpened: Date.now() }, name ? { name } : {}, title ? { title } : {}));
+  const wasFolder = MODE === "folder";
+  if (wasFolder) setMode("doc");
+  if (id === DOC_ID && S.started) {
+    if (!wasFolder) { toast("Tài liệu này đang mở"); return; }
+    setHash(tabRoute(S.route.tab)); renderBrand(); renderSide(); renderMain(); renderStatus(); closeSide();
+    return;
+  }
   if (S.unwatch) { try { S.unwatch(); } catch (e) {} S.unwatch = null; }
   if (S.dbUnsub) { try { S.dbUnsub(); } catch (e) {} S.dbUnsub = null; }
   DOC_ID = id; gSet("cur", id);
@@ -1871,29 +2036,116 @@ function openDoc(id, name, title) {
   renderBrand(); renderMain(); renderStatus(); closeSide();
   startSources();
 }
-function startSources() { startSnap(); startDb(); startLive(); }
-$("addForm").addEventListener("submit", (e) => {
+function startSources() { S.started = true; startSnap(); startDb(); startLive(); }
+
+/* ---------- paste box: tell documents, folders and single files apart as you paste ---------- */
+const ADD = { tok: 0, d: null, raw: "" };
+const ADD_LABEL = { gdoc: "Tài liệu Google Docs", folder: "Thư mục Google Drive", gsheet: "Google Sheets", gslide: "Google Slides", file: "File trên Google Drive" };
+const ADD_BTN = { gdoc: "Mở tài liệu", folder: "Mở thư mục", gsheet: "Xem file", gslide: "Xem file", file: "Xem file" };
+function detectLink(raw) {
+  raw = (raw || "").trim(); if (!raw) return null;
+  const d = driveIdOf(raw);
+  if (d) return Object.assign({ amb: d.t === "file" && !/\/file\/d\//.test(raw) }, d);
+  if (/^[\w-]{25,}$/.test(raw)) return { t: "file", id: raw, amb: true };
+  return { bad: true };
+}
+function paintDetect() {
+  const box = $("addDetect"), d = ADD.d;
+  if (!d) { box.hidden = true; $("addGo").textContent = "Mở"; return; }
+  box.hidden = false; box.classList.toggle("bad", !!d.bad);
+  if (d.bad) {
+    box.innerHTML = `${tile("web")}<div class="dt"><b>Chưa nhận ra link này</b><small>Dán link tài liệu Google Docs, thư mục hoặc file trên Google Drive.</small></div>`;
+    $("addGo").textContent = "Mở"; return;
+  }
+  const unknown = d.amb && !d.mime;
+  const k = d.t === "folder" ? "folder" : ["gdoc", "gsheet", "gslide"].includes(d.t) ? "doc" : kindOfMime(d.mime || "", "file");
+  const label = unknown ? "Link Google Drive" : ADD_LABEL[d.t];
+  const sub = d.title ? label + (d.size ? " · " + fmtSize(d.size) : "") : d.loading ? "Đang lấy tên từ Google Drive…" : unknown ? "Chưa rõ là thư mục hay file, trang sẽ kiểm tra khi bấm Mở" : "Chưa lấy được tên, vẫn mở được";
+  const tag = unknown ? "" : `<span class="ktag${d.t === "folder" ? " fd" : ""}">${d.t === "folder" ? "Thư mục" : d.t === "gdoc" ? "Tài liệu" : "File"}</span>`;
+  box.innerHTML = `${tile(unknown ? "file" : k)}<div class="dt"><b>${esc(d.title || label)}</b><small>${esc(sub)}</small></div>${tag}`;
+  $("addGo").textContent = unknown ? "Mở" : ADD_BTN[d.t];
+}
+function applyMeta(d, m) {
+  if (!m || m.err || !(m.title || m.mimeType)) return false;
+  d.title = m.title || ""; d.mime = m.mimeType || ""; d.size = +m.fileSize || 0; d.modified = m.modifiedTime || "";
+  if (d.t === "file" && d.mime) d.t = specOf(openUrl({ t: "file", id: d.id }), d.mime).t;
+  d.amb = false; return true;
+}
+async function runDetect() {
+  const raw = $("addUrl").value.trim(), tok = ++ADD.tok;
+  if (raw === ADD.raw && ADD.d) return;
+  const d = detectLink(raw); ADD.d = d; ADD.raw = raw; $("addErr").textContent = "";
+  if (!d || d.bad) { paintDetect(); return; }
+  d.loading = true; paintDetect();
+  const m = await fetchMeta(d.id);
+  if (tok !== ADD.tok) return;
+  d.loading = false; applyMeta(d, m); paintDetect();
+}
+let addT;
+$("addUrl").addEventListener("input", () => { clearTimeout(addT); addT = setTimeout(runDetect, 220); });
+$("addUrl").addEventListener("paste", () => { clearTimeout(addT); addT = setTimeout(runDetect, 30); });
+$("addForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const id = docIdFrom($("addUrl").value), name = $("addName").value.trim();
-  if (!id) { $("addErr").textContent = /docs\.google\.com\/(spreadsheets|presentation)|drive\.google\.com/.test($("addUrl").value) ? "Link này không phải Google Docs. Hiện trang mở được link Google Docs (docs.google.com/document/…); link Drive, Sheets, Slides bạn dán vào nội dung để xem trước." : "Chưa nhận ra link. Hãy dán link dạng https://docs.google.com/document/d/…"; return; }
-  $("addUrl").value = ""; $("addName").value = "";
-  openDoc(id, name);
+  const raw = $("addUrl").value.trim();
+  let d = ADD.d && ADD.raw === raw ? ADD.d : detectLink(raw);
+  if (!d) { $("addErr").textContent = "Dán link vào ô bên trên trước đã."; return; }
+  if (d.bad) { $("addErr").textContent = "Chưa nhận ra link. Hãy dán link Google Docs, hoặc link thư mục, file trên Google Drive."; return; }
+  if (d.amb && !d.mime) {
+    $("addGo").textContent = "Đang kiểm tra…";
+    const m = await fetchMeta(d.id);
+    if (!applyMeta(d, m)) { paintDetect(); $("addErr").textContent = "Chưa xác định được đây là thư mục hay file. Hãy dán link đầy đủ (có /folders/ hoặc /document/d/)."; return; }
+  }
+  const name = $("addName").value.trim();
+  $("addUrl").value = ""; $("addName").value = ""; ADD.d = null; ADD.raw = ""; ADD.tok++; paintDetect();
+  if (d.t === "gdoc") openDoc(d.id, name, d.title);
+  else if (d.t === "folder") openFolder(d.id, name, d.title);
+  else { closeLib(); lbOpen([specOf(openUrl({ t: d.t, id: d.id }), d.mime, d.size, d.title, d.modified)], 0); }
 });
 $("libList").addEventListener("click", (e) => {
   const b = e.target.closest("[data-libact]"); if (!b) return;
   const row = b.closest(".drow"), id = row.dataset.doc, act = b.dataset.libact, entry = libEntries().find((x) => x.id === id) || {};
-  if (act === "open") openDoc(id);
-  else if (act === "copy") copy(entry.url || docUrl(id), "Đã sao chép link tài liệu");
+  if (act === "open") openEntry(id);
+  else if (act === "copy") copy(entry.url || (entType(entry) === "folder" ? folderUrl(id) : docUrl(id)), "Đã sao chép link");
   else if (act === "del") {
     if (!b.classList.contains("armed")) { b.classList.add("armed"); b.title = "Bấm lần nữa để xoá"; toast("Bấm biểu tượng thùng rác lần nữa để xoá khỏi lịch sử"); setTimeout(() => b.classList.remove("armed"), 3500); return; }
     libSave(id, { hidden: true });
   } else if (act === "rename") {
-    const info = row.querySelector(".dinfo"), cur = entry.name || entry.title || "";
-    info.innerHTML = `<input type="text" value="${esc(cur)}" aria-label="Tên tài liệu"><small>Enter để lưu · Esc để huỷ</small>`;
-    const inp = info.querySelector("input"); inp.focus(); inp.select();
+    const box = row.querySelector(".dinfo"), cur = entry.name || entry.title || "";
+    box.innerHTML = `<input type="text" value="${esc(cur)}" aria-label="Tên gợi nhớ"><small>Enter để lưu · Esc để huỷ</small>`;
+    const inp = box.querySelector("input"); inp.focus(); inp.select();
     inp.addEventListener("keydown", (ev) => { if (ev.key === "Enter") { ev.preventDefault(); libSave(id, { name: inp.value.trim() }); } else if (ev.key === "Escape") { ev.stopPropagation(); renderLib(); } });
     inp.addEventListener("blur", () => { if (inp.isConnected) libSave(id, { name: inp.value.trim() }); });
   }
+});
+$("libSeg").addEventListener("click", (e) => { const b = e.target.closest("[data-libf]"); if (b) { LIB.f = b.dataset.libf; renderLib(); } });
+/* export / import so the history can move to another browser or be handed to a colleague */
+async function libExport() {
+  const items = Object.values(LIB.local).filter((e) => e && e.id && !e.hidden).map((e) => ({ id: e.id, type: entType(e), name: e.name || "", title: e.title || "", url: e.url, lastOpened: e.lastOpened || 0 }));
+  const data = JSON.stringify({ v: 1, kind: "kho-tai-lieu-lich-su", at: Date.now(), items }, null, 1);
+  const filename = "lich-su-kho-tai-lieu.json";
+  try {
+    if (IN_CLAUDE) { const d = await claude.use("downloads"); if (!d) throw new Error("trình xem này không cho tải file"); await d.save({ filename, data }); }
+    else { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([data], { type: "application/json" })); a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+    toast(`Đã xuất ${items.length} mục ra file ${filename}`);
+  } catch (e) { toast("Chưa xuất được: " + ((e && e.message) || "bạn đã huỷ")); }
+}
+$("libExport").onclick = libExport;
+$("libImport").onclick = () => $("libFile").click();
+$("libFile").addEventListener("change", async () => {
+  const f = $("libFile").files[0]; $("libFile").value = ""; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text()), items = Array.isArray(j) ? j : j && j.items;
+    if (!Array.isArray(items)) throw 0;
+    let added = 0, ok = 0;
+    items.forEach((it) => {
+      if (!it || typeof it.id !== "string" || !/^[\w-]{10,}$/.test(it.id)) return;
+      const cur = LIB.local[it.id], type = it.type === "folder" ? "folder" : (cur && cur.type) || "doc", str = (v) => (v == null ? "" : String(v).slice(0, 200));
+      LIB.local[it.id] = { id: it.id, type, name: (cur && cur.name) || str(it.name), title: (cur && cur.title) || str(it.title), lastOpened: Math.max(+(cur && cur.lastOpened) || 0, +it.lastOpened || 0), url: type === "folder" ? folderUrl(it.id) : docUrl(it.id) };
+      ok++; if (!cur || cur.hidden) added++;
+    });
+    if (!ok) throw 0;
+    gSet("lib", LIB.local); renderLib(); toast(`Đã nhập ${ok} mục${added ? `, trong đó ${added} mục mới` : ""}`);
+  } catch (e) { toast("File không đúng định dạng danh sách đã xuất từ trang này"); }
 });
 if (IN_CLAUDE) $("scanBox2").hidden = false;
 if (!IN_CLAUDE) {
@@ -1911,6 +2163,413 @@ $("libClose").onclick = closeLib;
 $("libModal").addEventListener("click", (e) => { if (e.target === $("libModal")) closeLib(); });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("libModal").hidden) closeLib(); });
 
+/* ---------- folder mode: a Drive folder opened level by level inside the page ---------- */
+let F = null;
+const isDir = (f) => /google-apps\.folder/.test(f.mimeType || "");
+const tOf = (m) => (/google-apps\.folder/.test(m) ? "folder" : /google-apps\.document/.test(m) ? "gdoc" : /google-apps\.spreadsheet/.test(m) ? "gsheet" : /google-apps\.presentation/.test(m) ? "gslide" : "file");
+const fSpec = (f) => { const t = tOf(f.mimeType || ""); return specOf(t === "folder" ? folderUrl(f.id) : openUrl({ t, id: f.id }), f.mimeType, f.fileSize, f.title || "Không tên", f.modifiedTime); };
+const viewable = (f) => !isDir(f) && tOf(f.mimeType || "") !== "gdoc";
+const FCATS = [["image", "Ảnh", "image"], ["video", "Video", "video"], ["pdf", "PDF", "pdf"], ["doc", "Tài liệu", "doc"], ["other", "Khác", "file"]];
+function fcat(f) {
+  const m = f.mimeType || "";
+  if (/^image\//.test(m)) return "image";
+  if (/^video\//.test(m)) return "video";
+  if (/pdf/.test(m)) return "pdf";
+  if (/google-apps\.(document|spreadsheet|presentation)|msword|officedocument|opendocument|rtf|^text\//.test(m)) return "doc";
+  return "other";
+}
+const THUMBS = !IN_CLAUDE;   // Google's thumbnails load on the web build; Claude pages may not load outside images
+const thumbUrl = (id, w) => `https://drive.google.com/thumbnail?id=${encodeURIComponent(id)}&sz=w${w}`;
+function idxFind(id) { if (!IDX || !IDX.folders) return null; for (const k in IDX.folders) { const it = IDX.folders[k].find((x) => x.i === id); if (it) return it; } return null; }
+async function fetchMeta(id) {
+  try {
+    if (IN_CLAUDE) {
+      const mcp = await getMcp(); if (!mcp) return null;
+      const p = (await mcp.callTool(DRIVE, "get_file_metadata", { fileId: id, excludeContentSnippets: true }, CACHE)).payload || {};
+      return { title: p.title, mimeType: p.mimeType, fileSize: p.fileSize, modifiedTime: p.modifiedTime };
+    }
+    if (HAS_API) return await apiGet({ action: "meta", id });
+    await loadIdx();
+    const it = idxFind(id); if (it) return { title: it.n, mimeType: it.m, fileSize: it.s, modifiedTime: it.d };
+    if (IDX && IDX.folders && IDX.folders[id]) return { mimeType: "application/vnd.google-apps.folder" };
+    return null;
+  } catch (e) { return { err: e }; }
+}
+async function listFolder(id, token, fresh) {
+  const clean = (arr) => (arr || []).filter((f) => f && f.id && !f.trashed).map((f) => ({ id: f.id, title: f.title || "", mimeType: f.mimeType || "", fileSize: +f.fileSize || 0, modifiedTime: f.modifiedTime || "" }));
+  if (IN_CLAUDE) {
+    const mcp = await getMcp(); if (!mcp) throw { code: "no_mcp", message: "cần mở trang trong Claude và kết nối Google Drive" };
+    const args = { query: `parentId = '${id}'`, pageSize: 100, excludeContentSnippets: true }; if (token) args.pageToken = token;
+    const p = (await mcp.callTool(DRIVE, "search_files", args, fresh ? { cache: false } : CACHE)).payload || {};
+    return { files: clean(p.files), next: p.nextPageToken || null };
+  }
+  if (HAS_API) { const p = await apiGet({ action: "list", id }, fresh); return { files: clean(p.files), next: null, note: p.truncated ? "Thư mục rất lớn, đang hiện 400 mục đầu." : "" }; }
+  await loadIdx();
+  if (IDX && IDX.folders && IDX.folders[id]) return { files: IDX.folders[id].map((x) => ({ id: x.i, title: x.n || "", mimeType: x.m || "", fileSize: x.s || 0, modifiedTime: x.d || "" })), next: null };
+  throw { code: "noidx" };
+}
+const FPAGE = 300;
+function fLoad(id, fresh) {
+  const n = F.nodes[id] || (F.nodes[id] = {});
+  if (n.files && !fresh) return Promise.resolve(n);
+  if (n.p) return n.p;
+  const fid = F.id;
+  n.p = (async () => {
+    try {
+      let r = await listFolder(id, null, fresh), files = r.files;
+      while (r.next && files.length < FPAGE) { r = await listFolder(id, r.next, fresh); files = files.concat(r.files); }
+      if (F && F.id === fid) { fRegister(id, files); n.files = files; n.next = r.next; n.note = r.note || ""; n.err = null; }
+    } catch (e) { n.err = e; }
+    n.p = null; return n;
+  })();
+  fStatus();
+  return n.p;
+}
+function fRegister(pid, files) { files.forEach((f) => { F.parent[f.id] = pid; F.name[f.id] = f.title; F.obj[f.id] = f; }); }
+async function fMore(id, btn) {
+  const n = F.nodes[id]; if (!n || !n.next) return;
+  if (btn) { btn.disabled = true; btn.textContent = "Đang tải…"; }
+  try {
+    let r = await listFolder(id, n.next), add = r.files;
+    while (r.next && add.length < FPAGE) { r = await listFolder(id, r.next); add = add.concat(r.files); }
+    fRegister(id, add); n.files = n.files.concat(add); n.next = r.next;
+  } catch (e) { toast("Chưa tải thêm được, thử lại sau"); }
+  fRefreshNode(id);
+}
+function fSorted(files) {
+  const by = F.sort, byName = (a, b) => String(a.title).localeCompare(String(b.title), "vi", { numeric: true });
+  const cmp = by === "new" ? (a, b) => String(b.modifiedTime).localeCompare(String(a.modifiedTime)) || byName(a, b) : by === "size" ? (a, b) => (b.fileSize || 0) - (a.fileSize || 0) || byName(a, b) : byName;
+  return { dirs: files.filter(isDir).sort(by === "new" ? cmp : byName), files: files.filter((f) => !isDir(f)).sort(cmp).filter((f) => F.kind === "all" || fcat(f) === F.kind) };
+}
+function fViewList(pid) { const n = F.nodes[pid]; return n && n.files ? fSorted(n.files).files.filter(viewable) : []; }
+const fChk = (f) => `<label class="fchk" title="Chọn để sao chép link"><input type="checkbox" data-fsel="${esc(f.id)}"${F.sel.has(f.id) ? " checked" : ""} aria-label="Chọn ${esc(f.title)}"></label>`;
+function fFileHtml(f, pid, path) {
+  const s = fSpec(f), k = specKind(s), gdoc = s.t === "gdoc", sel = F.sel.has(f.id);
+  const meta = [fmtSize(f.fileSize), fmtDate(f.modifiedTime)].filter(Boolean).join(" · ");
+  const act = gdoc ? lkAttr(s.url, s.mime, s.title) : ` type="button" data-fview="${esc(pid)}|${esc(f.id)}" title="${esc(f.title)}"`;
+  if (F.view === "grid" && path === undefined) {
+    const img = THUMBS && !gdoc ? `<img loading="lazy" referrerpolicy="no-referrer" src="${thumbUrl(f.id, 400)}" alt="" onerror="this.remove()">` : "";
+    return `<div class="fcard${sel ? " sel" : ""}" data-fitem="${esc(f.id)}">${fChk(f)}<button class="fbtn"${act}><span class="thumb">${tile(k)}${img}</span><span class="cap"><span class="nm">${esc(f.title || "Không tên")}</span><small>${esc(meta)}</small></span></button></div>`;
+  }
+  return `<div class="frow ffile${sel ? " sel" : ""}" data-fitem="${esc(f.id)}">${fChk(f)}<button class="fbtn"${act}>${tile(k)}<span class="nmw"><span class="nm">${esc(f.title || "Không tên")}</span>${path ? `<span class="path">${esc(path)}</span>` : ""}</span><small class="meta">${esc(meta)}</small>${gdoc ? svg(I.chev, "cv") : ""}</button></div>`;
+}
+function fDirMeta(id) { const n = F.nodes[id], f = F.obj[id] || {}; return [n && n.files ? num(n.files.length) + " mục" : "Thư mục", fmtDate(f.modifiedTime)].filter(Boolean).join(" · "); }
+function fDirHtml(f) {
+  const open = F.open.has(f.id);
+  return `<div class="fnode" data-fnode="${esc(f.id)}"><div class="frow fdir${F.sel.has(f.id) ? " sel" : ""}" data-fitem="${esc(f.id)}">${fChk(f)}<button class="fbtn" type="button" data-fopen="${esc(f.id)}" aria-expanded="${open}">${svg(I.right, "fv")}${tile("folder")}<span class="nm">${esc(f.title || "Không tên")}</span><small class="meta fcnt">${esc(fDirMeta(f.id))}</small></button></div>${open ? `<div class="fkids">${fKidsHtml(f.id)}</div>` : ""}</div>`;
+}
+function fKidsHtml(id) {
+  const n = F.nodes[id];
+  if (!n || (!n.files && !n.err)) return '<span class="spin">Đang mở thư mục…</span>';
+  if (n.err && !n.files) return fErrHtml(id, n.err);
+  if (!n.files.length) return '<p class="pv-msg">Thư mục trống.</p>';
+  const { dirs, files } = fSorted(n.files);
+  let h = dirs.map(fDirHtml).join("");
+  if (files.length) h += F.view === "grid" ? `<div class="fgrid">${files.map((f) => fFileHtml(f, id)).join("")}</div>` : files.map((f) => fFileHtml(f, id)).join("");
+  const hid = n.files.length - dirs.length - files.length;
+  if (hid) h += `<p class="pv-msg" style="padding:6px 8px;font-size:12.5px">${num(hid)} file khác đang bị ẩn bởi bộ lọc.</p>`;
+  if (n.next) h += `<div class="fmore"><button class="btn sm" type="button" data-fmore="${esc(id)}">Tải thêm</button></div>`;
+  if (n.note) h += `<p class="pv-msg" style="font-size:12px">${esc(n.note)}</p>`;
+  return h;
+}
+function fErrHtml(id, e) {
+  if (e && e.code === "noidx") return `<p class="pv-msg">Thư mục này chưa có trong bản quét của trang web. Để mở mọi thư mục từng cấp ngay tại đây, cần cài máy chủ Apps Script (xem README). Tạm thời xem bằng trình xem của Google:</p><div class="emb" style="height:460px;margin:6px 0 8px"><iframe src="https://drive.google.com/embeddedfolderview?id=${esc(id)}#grid" title="Thư mục" loading="lazy"></iframe></div>`;
+  const c = e && e.code, ask = c === "approval_required" || c === "consent_required";
+  const msg = c === "api" || c === "api_net" ? (c === "api" ? apiMsg(e) : "Không gọi được máy chủ Apps Script: " + e.message + ".")
+    : c === "needs_reauth" ? "Kết nối Google Drive đã hết hạn. Kết nối lại trong claude.ai → Settings → Connectors."
+    : c === "server_not_connected" || c === "server_not_found" || c === "selection_required" ? "Cần kết nối Google Drive trong claude.ai → Settings → Connectors để mở thư mục tại đây."
+    : ask ? "Trang cần bạn cho phép đọc Google Drive."
+    : c === "tool_error" ? "Google báo lỗi khi mở thư mục. Có thể tài khoản của bạn chưa có quyền xem."
+    : "Chưa mở được thư mục" + (e && e.message ? ": " + e.message : ".");
+  return `<p class="pv-msg">${esc(msg)}</p><div class="pv-acts" style="margin:4px 0 8px"><button class="btn sm pri" type="button" data-fretry="${esc(id)}">${ask ? "Cho phép và thử lại" : "Thử lại"}</button></div>`;
+}
+function fCrumbsHtml() {
+  const path = []; let x = F.last, g = 0;
+  while (x && x !== F.id && g++ < 40) { path.unshift(x); x = F.parent[x]; }
+  const ids = [F.id].concat(path), nm = (id) => (id === F.id ? fName() : F.name[id] || "Thư mục");
+  return `<nav class="crumbs" id="fcrumbs" aria-label="Vị trí">${ids.map((id, i) => (i === ids.length - 1 ? `<span>${esc(nm(id))}</span>` : `<button type="button" data-fcrumb="${esc(id)}">${esc(nm(id))}</button>${svg(I.right)}`)).join("")}</nav>`;
+}
+function fCounts() {
+  const c = { all: 0 };
+  const walk = (id) => { const n = F.nodes[id]; if (!n || !n.files) return; n.files.forEach((f) => { if (isDir(f)) { if (F.open.has(f.id)) walk(f.id); } else { c.all++; const k = fcat(f); c[k] = (c[k] || 0) + 1; } }); };
+  walk(F.id); return c;
+}
+function fChipsHtml() {
+  const c = fCounts();
+  return `<button class="fchip" type="button" data-fkind="all" aria-pressed="${F.kind === "all"}">Tất cả <b>${num(c.all)}</b></button>` + FCATS.filter(([k]) => c[k] || F.kind === k).map(([k, l, t]) => `<button class="fchip" type="button" data-fkind="${k}" aria-pressed="${F.kind === k}">${tile(t)}${l} <b>${num(c[k] || 0)}</b></button>`).join("");
+}
+function renderFolder() {
+  if (MODE !== "folder" || !F) return;
+  const main = $("main"), top = main.scrollTop, root = F.nodes[F.id];
+  let h = `<div class="page wide fpage">${fCrumbsHtml()}<h1 class="ttl">${esc(fName())}</h1><div class="metas">`;
+  if (root && root.files) { const nd = root.files.filter(isDir).length; h += `<span class="tag">${num(nd)} thư mục</span><span class="tag">${num(root.files.length - nd)} file</span>`; }
+  if (!IN_CLAUDE && !HAS_API && IDX && IDX.at) h += `<span class="tag">Bản quét ${fmtDate(IDX.at)}</span>`;
+  h += `<span class="tag">Bấm thư mục để xổ xuống · bấm file để xem lớn</span></div>`;
+  if (F.q.trim()) h += fSearchHtml();
+  else {
+    h += `<div class="ftools"><div class="filters" id="fFilters" role="group" aria-label="Loại file">${fChipsHtml()}</div><div class="right"><select class="fsort" id="fSort" aria-label="Sắp xếp"><option value="name"${F.sort === "name" ? " selected" : ""}>Tên A → Z</option><option value="new"${F.sort === "new" ? " selected" : ""}>Mới cập nhật</option><option value="size"${F.sort === "size" ? " selected" : ""}>Dung lượng lớn</option></select><div class="seg" role="tablist" aria-label="Kiểu hiển thị"><button type="button" data-flay="list" aria-selected="${F.view === "list"}">Danh sách</button><button type="button" data-flay="grid" aria-selected="${F.view === "grid"}">Lưới</button></div><button class="btn sm" type="button" data-fact="collapse" id="fCollapse"${F.open.size > 1 ? "" : " hidden"}>Thu gọn tất cả</button><button class="ib" type="button" data-fact="copyfolder" title="Sao chép link thư mục">${svg(I.link)}</button></div></div>`;
+    h += `<div class="flist" id="flist">${fKidsHtml(F.id)}</div>`;
+  }
+  h += `<div class="fselbar" id="fselbar" hidden></div></div>`;
+  main.innerHTML = h; main.scrollTop = top;
+  fSelPaint();
+}
+function fToolsPaint() {
+  const el = $("fFilters"); if (el) el.innerHTML = fChipsHtml();
+  const c = $("fCollapse"); if (c) c.hidden = F.open.size < 2;
+  const cr = $("fcrumbs"); if (cr) cr.outerHTML = fCrumbsHtml();
+}
+function fRefreshNode(id) {
+  if (MODE !== "folder" || !F) return;
+  if (id === F.id || F.q.trim()) { renderFolder(); renderFTree(); fStatus(); return; }
+  const node = $("main").querySelector(`[data-fnode="${CSS.escape(id)}"]`);
+  if (node) {
+    const kids = node.querySelector(":scope > .fkids");
+    if (kids) { kids.querySelectorAll(".pv").forEach(pvClose); kids.innerHTML = fKidsHtml(id); }
+    const c = node.querySelector(":scope > .frow .fcnt"); if (c) c.textContent = fDirMeta(id);
+  }
+  fToolsPaint(); renderFTree(); fStatus();
+}
+const fNodeEl = (id) => $("main").querySelector(`[data-fnode="${CSS.escape(id)}"]`);
+function isBelow(x, anc) { let p = F.parent[x], g = 0; while (p && g++ < 60) { if (p === anc) return true; p = F.parent[p]; } return false; }
+function fSave() { gSet("fstate:" + F.id, { open: [...F.open].slice(0, 30), last: F.last, sort: F.sort, view: F.view }); }
+async function fToggle(id) {
+  const node = fNodeEl(id);
+  if (F.open.has(id)) {
+    F.open.delete(id); [...F.open].forEach((x) => { if (isBelow(x, id)) F.open.delete(x); });
+    if (F.last === id || isBelow(F.last, id)) F.last = F.parent[id] || F.id;
+    if (node) { const k = node.querySelector(":scope > .fkids"); if (k) { k.querySelectorAll(".pv").forEach(pvClose); k.remove(); } node.querySelector(":scope > .frow .fbtn").setAttribute("aria-expanded", "false"); }
+    fToolsPaint(); renderFTree(); fSave(); return;
+  }
+  F.open.add(id); F.last = id;
+  if (node) { node.querySelector(":scope > .frow .fbtn").setAttribute("aria-expanded", "true"); node.insertAdjacentHTML("beforeend", `<div class="fkids">${fKidsHtml(id)}</div>`); }
+  fToolsPaint(); renderFTree(); fSave();
+  const n = F.nodes[id];
+  if (!(n && n.files)) { await fLoad(id); if (F && F.open.has(id)) fRefreshNode(id); }
+}
+function fScrollTo(id) {
+  const el = fNodeEl(id); if (!el) return;
+  el.scrollIntoView({ block: "start", behavior: "smooth" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+}
+async function fReveal(id) {
+  if (F.q) { F.q = ""; $("q").value = ""; }
+  let x = id, g = 0; while (x && x !== F.id && g++ < 60) { F.open.add(x); x = F.parent[x]; }
+  F.last = id;
+  renderFolder(); renderFTree(); fSave(); fScrollTo(id);
+  const n = F.nodes[id];
+  if (!(n && n.files)) { await fLoad(id); fRefreshNode(id); }
+}
+function fCollapseAll() { F.open = new Set([F.id]); F.last = F.id; renderFolder(); renderFTree(); fSave(); $("main").scrollTop = 0; }
+function renderFTree() {
+  if (MODE !== "folder" || !F) return;
+  const row = (id, depth) => {
+    const n = F.nodes[id], open = F.open.has(id), subs = n && n.files ? fSorted(n.files).dirs : null;
+    const nm = id === F.id ? fName() : F.name[id] || "Thư mục", has = subs === null || subs.length > 0;
+    let h = `<button class="row${id === F.last ? " active" : ""}" type="button" data-ftree="${esc(id)}" aria-expanded="${open}" style="padding-left:${9 + Math.min(depth, 8) * 12}px" title="${esc(nm)}">${has ? svg(I.right, "chev") : '<span class="sp14"></span>'}<span class="em">${svg(P.folder)}</span><span class="tt">${esc(nm)}</span>${n && n.files ? `<span class="cnt">${num(n.files.length)}</span>` : ""}</button>`;
+    if (open && subs) h += subs.map((s) => row(s.id, depth + 1)).join("");
+    return h;
+  };
+  const tree = $("tree"); tree.innerHTML = row(F.id, 0);
+  $("tabCount").textContent = "Cây thư mục";
+  const act = tree.querySelector(".active");
+  if (act) { const r = act.getBoundingClientRect(), tr = tree.getBoundingClientRect(); if (r.top < tr.top || r.bottom > tr.bottom) act.scrollIntoView({ block: "nearest" }); }
+}
+function fStatus() {
+  if (MODE !== "folder" || !F) return;
+  const nodes = Object.values(F.nodes), items = nodes.reduce((a, n) => a + (n.files ? n.files.length : 0), 0), busy = nodes.some((n) => n.p) || (F.crawl && F.crawl.running);
+  const live = IN_CLAUDE || HAS_API;
+  $("status").dataset.s = busy ? "loading" : live ? "live" : "snap";
+  $("statusText").textContent = busy ? "Đang mở thư mục" : (live ? "Trực tiếp từ Drive · " : "Bản quét · ") + num(items) + " mục";
+  $("status").title = live ? "Danh sách lấy trực tiếp từ Google Drive" : "Danh sách lấy từ bản quét đã lưu cùng trang web";
+}
+/* search by name: instant over the folders already opened, or crawl the whole tree */
+function fPath(id) { const p = []; let x = F.parent[id], g = 0; while (x && x !== F.id && g++ < 40) { p.unshift(F.name[x] || ""); x = F.parent[x]; } return [fName()].concat(p).join(" › "); }
+function fSearchHtml() {
+  const terms = norm(F.q.trim()).split(/\s+/).filter(Boolean), seen = new Set(), hits = [];
+  Object.keys(F.nodes).forEach((pid) => { const n = F.nodes[pid]; (n.files || []).forEach((f) => { if (seen.has(f.id)) return; seen.add(f.id); const nm = norm(f.title || ""); if (terms.every((w) => nm.includes(w)) && (F.kind === "all" || isDir(f) || fcat(f) === F.kind)) hits.push(f); }); });
+  hits.sort((a, b) => (isDir(a) ? 0 : 1) - (isDir(b) ? 0 : 1) || String(a.title).localeCompare(String(b.title), "vi", { numeric: true }));
+  F.results = hits;
+  const nf = Object.values(F.nodes).filter((n) => n.files).length, cr = F.crawl;
+  let h = `<div class="fsearch-h"><span>${num(hits.length)} kết quả cho “${esc(F.q.trim())}” trong ${num(nf)} thư mục${cr && cr.finished ? " (đã quét toàn bộ cây)" : " đã mở"} · Esc để xoá</span>`;
+  if (cr && cr.running) h += `<span class="spin">Đang quét ${num(cr.done)} / ${num(cr.seen)} thư mục…</span>`;
+  else if (!cr || !cr.finished) h += `<button class="btn sm pri" type="button" data-fact="crawl">Tìm trong mọi thư mục con</button>`;
+  h += "</div>";
+  if (!hits.length) h += `<p class="note">Không thấy mục nào khớp.${cr && cr.finished ? " Thử từ khoá ngắn hơn." : " Bấm “Tìm trong mọi thư mục con” để tìm cả những thư mục chưa mở."}</p>`;
+  else h += `<div class="flist">${hits.slice(0, 300).map((f) => (isDir(f) ? `<div class="frow fdir"><span class="fchk"></span><button class="fbtn" type="button" data-freveal="${esc(f.id)}">${tile("folder")}<span class="nmw"><span class="nm">${esc(f.title)}</span><span class="path">${esc(fPath(f.id))}</span></span><small class="meta">Mở trong cây</small></button></div>` : fFileHtml(f, "?", fPath(f.id)))).join("")}</div>${hits.length > 300 ? '<p class="note">Đang hiện 300 kết quả đầu, gõ thêm từ khoá để thu hẹp.</p>' : ""}`;
+  return h;
+}
+async function fCrawl() {
+  if (F.crawl && F.crawl.running) return;
+  const fid = F.id, LIMIT = 1500, seen = new Set([F.id]), queue = [F.id];
+  let active = 0, last = 0;
+  F.crawl = { running: true, done: 0, seen: 1 }; renderFolder(); fStatus();
+  const alive = () => F && F.id === fid;
+  await Promise.all([0, 1, 2, 3].map(async () => {
+    while (alive() && (queue.length || active)) {
+      if (!queue.length) { await sleep(120); continue; }
+      const id = queue.shift(); active++;
+      try { const n = await fLoad(id); (n.files || []).filter(isDir).forEach((d) => { if (!seen.has(d.id) && seen.size < LIMIT) { seen.add(d.id); queue.push(d.id); } }); }
+      finally { active--; if (alive()) { F.crawl.done++; F.crawl.seen = seen.size; } }
+      if (alive() && Date.now() - last > 700) { last = Date.now(); if (F.q.trim()) renderFolder(); fStatus(); }
+    }
+  }));
+  if (!alive()) return;
+  F.crawl = { running: false, finished: true, done: seen.size, seen: seen.size };
+  renderFolder(); renderFTree(); fStatus();
+  toast(`Đã quét ${num(seen.size)} thư mục, tìm kiếm giờ bao gồm toàn bộ cây`);
+}
+/* pick several items and copy their links in one go */
+function fSelToggle(id, on) {
+  const f = F.obj[id]; if (!f) return;
+  if (on) F.sel.set(id, f); else F.sel.delete(id);
+  document.querySelectorAll(`[data-fitem="${CSS.escape(id)}"]`).forEach((el) => el.classList.toggle("sel", on));
+  fSelPaint();
+}
+function fSelPaint() {
+  const bar = $("fselbar"); if (!bar) return;
+  const n = F.sel.size; bar.hidden = !n; $("main").classList.toggle("fsel-on", n > 0);
+  if (!n) return;
+  const nv = [...F.sel.values()].filter(viewable).length;
+  bar.innerHTML = `<span>Đã chọn <b>${num(n)}</b> mục</span><button class="btn sm pri" type="button" data-fact="selcopy">${svg(I.copy)}Sao chép link</button>${nv ? `<button class="btn sm" type="button" data-fact="selview">Xem ${num(nv)} file đã chọn</button>` : ""}<button class="btn sm" type="button" data-fact="selnone">Bỏ chọn</button>`;
+}
+async function fRefresh() {
+  const fid = F.id, ids = [...F.open];
+  F.crawl = null;
+  await Promise.all(ids.map((id) => fLoad(id, true)));
+  if (!F || F.id !== fid) return;
+  renderFolder(); renderFTree(); fStatus();
+  toast(IN_CLAUDE || HAS_API ? "Đã tải lại danh sách từ Google Drive" : "Bản web đang dùng danh sách đã quét sẵn");
+}
+function setMode(m) {
+  MODE = m; gSet("mode", m);
+  document.querySelector(".app").classList.toggle("fmode", m === "folder");
+  $("q").placeholder = m === "folder" ? "Tìm tên file trong thư mục, gõ không dấu cũng được" : "Tìm trong toàn bộ tài liệu, gõ không dấu cũng được";
+  $("sideFoot").innerHTML = m === "folder" ? "Phím <b>/</b> tìm · bấm thư mục để xổ · <b>[</b> ẩn thanh này" : "Phím <b>/</b> tìm · <b>← →</b> chuyển tab · <b>[</b> ẩn thanh này";
+  $("tree").className = m === "folder" ? "tree ftree" : "tree";
+  $("refreshBtn").title = m === "folder" ? "Tải lại danh sách từ Google Drive" : "Kiểm tra bản mới trên Google Docs";
+  $("fBackS").textContent = libName(DOC_ID);
+  $("main").classList.remove("fsel-on");
+  $("tree").innerHTML = ""; banner(null);
+}
+function openFolder(id, name, title, from) {
+  closeLib(); lbClose();
+  if (!id || !/^[\w-]{10,}$/.test(id)) return;
+  libSave(id, Object.assign({ type: "folder", lastOpened: Date.now() }, name ? { name } : {}, title ? { title } : {}));
+  if (MODE === "folder" && F && F.id === id) { toast("Thư mục này đang mở"); return; }
+  const saved = gGet("fstate:" + id, {}) || {};
+  F = { id, nodes: {}, parent: {}, name: {}, obj: {}, open: new Set([id]), last: id, kind: "all", sort: saved.sort || "name", view: saved.view || "list", q: "", sel: new Map(), crawl: null, results: [], from: from || null };
+  const restore = (saved.open || []).filter((x) => x !== id && /^[\w-]{10,}$/.test(x)).slice(0, 12);
+  setMode("folder"); gSet("curFolder", id);
+  $("q").value = ""; S.query = "";
+  setHash("f-" + id);
+  renderBrand(); renderFTree(); renderFolder(); $("main").scrollTop = 0; fStatus(); closeSide();
+  fLoad(id).then(async () => {
+    if (!F || F.id !== id) return;
+    if (restore.length) {
+      await Promise.all(restore.map((x) => fLoad(x)));
+      if (!F || F.id !== id) return;
+      restore.forEach((x) => { if (F.parent[x]) F.open.add(x); });
+      F.open.forEach((x) => { let p = F.parent[x], g = 0; while (p && p !== id && g++ < 60) { if (!F.open.has(p)) { F.open.delete(x); break; } p = F.parent[p]; } });
+      if (saved.last && F.open.has(saved.last)) F.last = saved.last;
+    }
+    renderFolder(); renderFTree(); fStatus();
+  });
+  const e = libEntries().find((x) => x.id === id);
+  if (!e || !e.title) fetchMeta(id).then((m) => { if (m && m.title && F && F.id === id) { libSave(id, { type: "folder", title: m.title }); renderFolder(); renderFTree(); } });
+}
+$("fBack").onclick = () => openDoc(DOC_ID);
+$("fRoot").onclick = () => { if (F) { fCollapseAll(); closeSide(); } };
+document.addEventListener("click", (e) => {
+  if (MODE !== "folder" || !F) return;
+  const el = e.target.closest("[data-fopen],[data-fview],[data-fmore],[data-fretry],[data-fcrumb],[data-fkind],[data-flay],[data-fact],[data-ftree],[data-freveal]");
+  if (!el) return;
+  const d = el.dataset;
+  if (d.fopen) fToggle(d.fopen);
+  else if (d.fview) {
+    const [pid, id] = d.fview.split("|"), list = pid === "?" ? (F.results || []).filter(viewable) : fViewList(pid);
+    lbOpen(list.map(fSpec), Math.max(0, list.findIndex((f) => f.id === id)));
+  }
+  else if (d.fmore) fMore(d.fmore, el);
+  else if (d.fretry) { const n = F.nodes[d.fretry]; if (n) n.err = null; fRefreshNode(d.fretry); fLoad(d.fretry, true).then(() => fRefreshNode(d.fretry)); }
+  else if (d.fcrumb) { const id = d.fcrumb; [...F.open].forEach((x) => { if (isBelow(x, id)) F.open.delete(x); }); F.last = id; renderFolder(); renderFTree(); fSave(); if (id === F.id) $("main").scrollTop = 0; else fScrollTo(id); }
+  else if (d.fkind) { F.kind = d.fkind; renderFolder(); }
+  else if (d.flay) { F.view = d.flay; fSave(); renderFolder(); }
+  else if (d.freveal) fReveal(d.freveal);
+  else if (d.ftree) {
+    const id = d.ftree; closeSide();
+    if (id === F.id) { F.last = F.id; fToolsPaint(); renderFTree(); $("main").scrollTop = 0; return; }
+    if (F.open.has(id) && F.last === id) fToggle(id); else fReveal(id);
+  }
+  else if (d.fact === "collapse") fCollapseAll();
+  else if (d.fact === "copyfolder") copy(folderUrl(F.id), "Đã sao chép link thư mục");
+  else if (d.fact === "crawl") fCrawl();
+  else if (d.fact === "selnone") { [...F.sel.keys()].forEach((id) => fSelToggle(id, false)); document.querySelectorAll("[data-fsel]").forEach((c) => (c.checked = false)); }
+  else if (d.fact === "selcopy") { const v = [...F.sel.values()]; copy(v.map((f) => `${f.title}\n${fSpec(f).url}`).join("\n\n"), `Đã sao chép ${v.length} link`); }
+  else if (d.fact === "selview") { const v = [...F.sel.values()].filter(viewable); lbOpen(v.map(fSpec), 0); }
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" || MODE !== "folder" || !F || !F.q || !$("lb").hidden || !$("libModal").hidden || !$("copyModal").hidden) return;
+  if (document.activeElement === $("q")) return;
+  clearSearch(); 
+});
+document.addEventListener("change", (e) => {
+  if (MODE !== "folder" || !F) return;
+  const t = e.target;
+  if (t.dataset && t.dataset.fsel) fSelToggle(t.dataset.fsel, t.checked);
+  else if (t.id === "fSort") { F.sort = t.value; fSave(); renderFolder(); renderFTree(); }
+});
+
+/* ---------- big viewer: one file at a time, ← → through the folder ---------- */
+const LB = { items: [], i: 0, panel: null };
+function lbOpen(items, i) {
+  if (!items || !items.length) return;
+  LB.items = items; LB.i = Math.max(0, Math.min(i || 0, items.length - 1));
+  $("lb").hidden = false; lbShow();
+}
+function lbShow() {
+  if (LB.panel) { pvClose(LB.panel); LB.panel = null; }
+  const n = LB.items.length, panel = pvMake(LB.items[LB.i], true);
+  LB.panel = panel; $("lbStage").appendChild(panel);
+  panel.querySelector(".lb-n").textContent = n > 1 ? `${num(LB.i + 1)} / ${num(n)}` : "";
+  $("lbPrev").hidden = $("lbNext").hidden = n < 2;
+  $("lbPrev").disabled = LB.i === 0; $("lbNext").disabled = LB.i >= n - 1;
+  pvStart(panel);
+}
+function lbGo(d) { const j = LB.i + d; if (j < 0 || j >= LB.items.length) return; LB.i = j; lbShow(); }
+function lbClose() {
+  if ($("lb").hidden) return;
+  if (document.fullscreenElement === $("lb")) { try { document.exitFullscreen(); } catch (e) {} }
+  if (LB.panel) { pvClose(LB.panel); LB.panel = null; }
+  $("lb").hidden = true; LB.items = [];
+}
+/* files listed inside a document's folder drop-down open in the big viewer too */
+function lbFromFitem(btn) {
+  const s = specOf(btn.dataset.lk, btn.dataset.mime, btn.dataset.size, btn.dataset.title, btn.dataset.mod);
+  if (s.t === "folder" || s.t === "gdoc" || s.t === "ext") return false;
+  const list = [...btn.parentNode.children].filter((b) => b.classList && b.classList.contains("fitem")).map((b) => specOf(b.dataset.lk, b.dataset.mime, b.dataset.size, b.dataset.title, b.dataset.mod)).filter((x) => x.t !== "folder" && x.t !== "gdoc");
+  lbOpen(list, Math.max(0, list.findIndex((x) => x.id === s.id)));
+  return true;
+}
+$("lbPrev").onclick = () => lbGo(-1);
+$("lbNext").onclick = () => lbGo(1);
+$("lb").addEventListener("click", (e) => { if (e.target === $("lb")) lbClose(); });
+document.addEventListener("keydown", (e) => {
+  if ($("lb").hidden) return;
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement && document.activeElement.tagName);
+  if (e.key === "Escape") { if (!$("copyModal").hidden) return; e.preventDefault(); e.stopImmediatePropagation(); lbClose(); }
+  else if (!typing && (e.key === "ArrowLeft" || e.key === "ArrowRight")) { e.preventDefault(); e.stopImmediatePropagation(); lbGo(e.key === "ArrowLeft" ? -1 : 1); }
+  else if (e.key === "/" || e.key === "[") e.stopImmediatePropagation();
+}, true);
+let lbSw = null;
+$("lb").addEventListener("touchstart", (e) => { lbSw = e.touches.length === 1 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null; }, { passive: true });
+$("lb").addEventListener("touchend", (e) => {
+  const s = lbSw; lbSw = null;
+  if (!s || !LB.panel || (LB.panel._z || 1) > 1) return;
+  const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
+  if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5) lbGo(dx < 0 ? 1 : -1);
+});
+
 /* ---------- light / dark ---------- */
 const SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 const MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg>';
@@ -1926,9 +2585,12 @@ setNav(gGet("nav", true), false);
 /* ---------- boot ---------- */
 if (!IN_CLAUDE && !HAS_API) loadIdx();
 S.route = parseHash();
-renderBrand();
-renderMain();
-startSources();
+{
+  const h0 = location.hash.slice(1), hf = /^f-([\w-]{10,})$/.exec(h0);
+  const bootFolder = hf ? hf[1] : (!h0 || h0 === "folder") && gGet("mode", "doc") === "folder" ? gGet("curFolder", null) : null;
+  if (bootFolder) openFolder(bootFolder);
+  else { gSet("mode", "doc"); renderBrand(); renderMain(); startSources(); }
+}
 })();
 </script>
 </body>

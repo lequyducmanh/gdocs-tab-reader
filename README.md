@@ -1,6 +1,6 @@
 # gdocs-tab-reader
 
-Trình đọc Google Docs nhiều tab, dựng cho kho tài liệu dự án **Vinhomes Global Gate Hạ Long**. Một file Google Docs có hàng trăm tab mở chậm và khó tìm. Trang này mở nhanh, tìm được trên mọi tab, và xem link Drive/PDF/ảnh ngay tại chỗ.
+Trình đọc Google Docs nhiều tab và thư mục Google Drive, dựng cho kho tài liệu dự án **Vinhomes Global Gate Hạ Long**. Một file Google Docs có hàng trăm tab mở chậm và khó tìm. Trang này mở nhanh, tìm được trên mọi tab, và xem link Drive/PDF/ảnh ngay tại chỗ. Dán link thư mục Drive thì trang chuyển sang giao diện thư mục, mở từng cấp ngay trong trang.
 
 ## Tính năng
 
@@ -14,7 +14,24 @@ Trình đọc Google Docs nhiều tab, dựng cho kho tài liệu dự án **Vin
   - Link Facebook, YouTube, Canva: hiện thẻ link để sao chép, chỉ mở tab mới khi bấm nút
 - **Thanh tiến trình khi tải file.** Số MB là ước tính, vì connector không báo số byte đã tải.
 - **Thư viện tài nguyên.** Gom mọi link của tài liệu, bỏ trùng, lọc theo loại.
-- **Mở nhiều tài liệu.** Dán link Google Docs khác vào, có lịch sử (tên + link) để mở lại.
+- **Dán link là mở.** Ô "Thêm link" tự nhận loại khi dán và lấy tên thật từ Drive:
+  - link Google Docs → trình đọc nhiều tab;
+  - link thư mục Drive → giao diện thư mục;
+  - link một file → khung xem lớn.
+- **Giao diện thư mục:**
+  - Thanh bên là cây thư mục. Vùng giữa có các thư mục con xổ xuống từng cấp, kèm đường dẫn "Gốc › …".
+  - Lọc theo loại (ảnh, video, PDF, tài liệu). Sắp xếp theo tên, ngày hoặc dung lượng. Xem dạng danh sách hoặc lưới.
+  - Tìm tên file tức thì trong các thư mục đã mở. Nút "Tìm trong mọi thư mục con" quét toàn bộ cây.
+  - Chọn nhiều file để sao chép link một lần.
+  - Google Docs trong thư mục xổ xuống đọc tại chỗ.
+  - Trang nhớ các thư mục đang mở của từng thư mục gốc.
+  - Link dạng `…/#f-<id thư mục>` mở thẳng thư mục đó.
+- **Khung xem lớn.** Bấm một file (ảnh, PDF, video, Sheets, Slides) để mở gần kín màn hình:
+  - lướt sang file khác bằng ← →, phím mũi tên hoặc vuốt;
+  - phóng to bằng 2 ngón;
+  - Esc để đóng.
+  File đã tải được giữ trong bộ nhớ, nên quay lại xem tiếp ngay. File trong thư mục xổ xuống từ tài liệu cũng mở bằng khung này.
+- **Lịch sử riêng từng người.** Lịch sử tài liệu và thư mục lưu trên trình duyệt (localStorage), người khác không thấy. "Xuất danh sách" và "Nhập danh sách" (file JSON) dùng để chuyển sang máy khác hoặc gửi bộ link cho đồng nghiệp. Tài liệu dự án gốc luôn được ghim sẵn.
 - **Tiện ích đọc:** chế độ sáng/tối (mặc định sáng), ẩn/hiện thanh điều hướng, chỉnh cỡ chữ, phím tắt.
 
 ## Cấu trúc
@@ -29,10 +46,10 @@ Trình đọc Google Docs nhiều tab, dựng cho kho tài liệu dự án **Vin
 
 ## Cách chạy
 
-Trang được viết để chạy như một **Claude artifact**. Đọc trực tiếp Google Docs/Drive, đồng bộ cho cả nhóm và lưu lịch sử chung đều dùng các khả năng của artifact (`window.claude.use("mcp")`, `use("db")`), nên cần:
+Trang được viết để chạy như một **Claude artifact**. Đọc trực tiếp Google Docs/Drive và đồng bộ nội dung tài liệu cho cả nhóm đều dùng các khả năng của artifact (`window.claude.use("mcp")`, `use("db")`), nên cần:
 
 - Kết nối **Google Docs** và **Google Drive** trong claude.ai → Settings → Connectors.
-- Artifact khai báo các capability: `mcp` (Google Docs: `read_doc`; Google Drive: `search_files`, `get_file_metadata`, `download_file_content`, `read_file_content`), `db`, `user`.
+- Artifact khai báo các capability: `mcp` (Google Docs: `read_doc`; Google Drive: `search_files`, `get_file_metadata`, `download_file_content`, `read_file_content`), `db`, `user`, `downloads`.
 
 ### Bản GitHub Pages
 
@@ -52,7 +69,7 @@ Máy chủ chỉ trả về những gì đang chia sẻ **"Bất kỳ ai có đ�
 6. **Triển khai** → *Triển khai mới* → loại **Ứng dụng web**: *Thực thi với tư cách* **Tôi**, *Ai có quyền truy cập* **Bất kỳ ai** → Triển khai → sao chép địa chỉ `…/exec`.
 7. Dán địa chỉ đó vào `config.js` (trường `api`) rồi đẩy lên GitHub. Cách khác: dán vào ô *Máy chủ cho bản web* trong cửa sổ "Đổi tài liệu" của trang (chỉ lưu trên trình duyệt đó).
 
-Chưa cài máy chủ thì bản web vẫn hiển thị bản lưu `snapshot.json`, và link mở bằng trình xem nhúng của Google, YouTube, Canva, Facebook. Riêng thư mục con sẽ mở ra tab mới.
+Chưa cài máy chủ thì bản web vẫn hiển thị bản lưu `snapshot.json`, và link mở bằng trình xem nhúng của Google, YouTube, Canva, Facebook. Thư mục có trong `drive-index.json` vẫn mở từng cấp ngay trong trang. File này là bản quét tạo từ trang Claude: Thư viện tài nguyên → "Tải file cho bản web". Thư mục chưa có trong bản quét sẽ hiện bằng trình xem nhúng của Google Drive.
 
 ### Tạo lại bản lưu
 
