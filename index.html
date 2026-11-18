@@ -2311,7 +2311,9 @@ function renderFolder() {
   if (root && root.files) { const nd = root.files.filter(isDir).length; h += `<span class="tag">${num(nd)} thư mục</span><span class="tag">${num(root.files.length - nd)} file</span>`; }
   if (!IN_CLAUDE && !HAS_API && IDX && IDX.at) h += `<span class="tag">Bản quét ${fmtDate(IDX.at)}</span>`;
   h += `<span class="tag">Bấm thư mục để xổ xuống · bấm file để xem lớn</span></div>`;
+  const rootErr = root && root.err && !root.files;
   if (F.q.trim()) h += fSearchHtml();
+  else if (rootErr) h += `<div class="flist" id="flist" style="margin-top:18px">${fKidsHtml(F.id)}</div>`;
   else {
     h += `<div class="ftools"><div class="filters" id="fFilters" role="group" aria-label="Loại file">${fChipsHtml()}</div><div class="right"><select class="fsort" id="fSort" aria-label="Sắp xếp"><option value="name"${F.sort === "name" ? " selected" : ""}>Tên A → Z</option><option value="new"${F.sort === "new" ? " selected" : ""}>Mới cập nhật</option><option value="size"${F.sort === "size" ? " selected" : ""}>Dung lượng lớn</option></select><div class="seg" role="tablist" aria-label="Kiểu hiển thị"><button type="button" data-flay="list" aria-selected="${F.view === "list"}">Danh sách</button><button type="button" data-flay="grid" aria-selected="${F.view === "grid"}">Lưới</button></div><button class="btn sm" type="button" data-fact="collapse" id="fCollapse"${F.open.size > 1 ? "" : " hidden"}>Thu gọn tất cả</button><button class="ib" type="button" data-fact="copyfolder" title="Sao chép link thư mục">${svg(I.link)}</button></div></div>`;
     h += `<div class="flist" id="flist">${fKidsHtml(F.id)}</div>`;
@@ -2386,7 +2388,8 @@ function fStatus() {
   const nodes = Object.values(F.nodes), items = nodes.reduce((a, n) => a + (n.files ? n.files.length : 0), 0), busy = nodes.some((n) => n.p) || (F.crawl && F.crawl.running);
   const live = IN_CLAUDE || HAS_API;
   $("status").dataset.s = busy ? "loading" : live ? "live" : "snap";
-  $("statusText").textContent = busy ? "Đang mở thư mục" : (live ? "Trực tiếp từ Drive · " : "Bản quét · ") + num(items) + " mục";
+  const noScan = !live && !(IDX && IDX.folders && Object.keys(IDX.folders).length);
+  $("statusText").textContent = busy ? "Đang mở thư mục" : noScan ? "Chưa có bản quét thư mục" : (live ? "Trực tiếp từ Drive · " : "Bản quét · ") + num(items) + " mục";
   $("status").title = live ? "Danh sách lấy trực tiếp từ Google Drive" : "Danh sách lấy từ bản quét đã lưu cùng trang web";
 }
 /* search by name: instant over the folders already opened, or crawl the whole tree */
