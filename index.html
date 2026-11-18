@@ -925,7 +925,7 @@ function renderLinks(main) {
   const q = norm(S.libText.trim());
   const shown = list.filter((l) => (S.libKind === "all" || l.kind === S.libKind) && (!q || l.nl.includes(q)));
   let h = `<div class="page wide"><nav class="crumbs"><span>Thư viện tài nguyên</span></nav><h1 class="ttl">Mọi tài nguyên trong một chỗ</h1><p class="lead">Gom ${num(list.length)} link từ ${S.order.length} tab, đã bỏ trùng. Bấm vào một dòng để xem ngay bên dưới.</p>`;
-  if (IN_CLAUDE) h += `<div class="scanbox" id="scanBox"><div class="scan-t"><b>Cây thư mục cho bản web (GitHub Pages)</b><small id="scanInfo">${esc(scanInfoText())}</small></div><button class="btn pri" type="button" data-act="scan" id="scanBtn">${SCAN.running ? "Đang quét…" : "Quét thư mục Drive"}</button><div class="prog" id="scanProg" ${SCAN.running ? "" : "hidden"}><div class="prog-bar"><i style="width:${SCAN.pct || 0}%"></i></div><small><span id="scanTxt">${esc(SCAN.txt || "")}</span><span></span></small></div></div>`;
+  if (IN_CLAUDE) h += `<div class="scanbox" id="scanBox"><div class="scan-t"><b>Cây thư mục cho bản web (GitHub Pages)</b><small id="scanInfo">${esc(scanInfoText())}</small></div><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn pri" type="button" data-act="exportIdx" id="exportBtn" ${SCAN.state && !SCAN.running ? "" : "hidden"}>Tải file cho bản web</button><button class="btn" type="button" data-act="scan" id="scanBtn">${SCAN.running ? "Đang quét…" : SCAN.state ? "Quét lại" : "Quét thư mục Drive"}</button></span><div class="prog" id="scanProg" ${SCAN.running ? "" : "hidden"}><div class="prog-bar"><i style="width:${SCAN.pct || 0}%"></i></div><small><span id="scanTxt">${esc(SCAN.txt || "")}</span><span></span></small></div></div>`;
   h += `<div class="filters" role="group" aria-label="Loại tài nguyên"><button class="fchip" type="button" data-kind="all" aria-pressed="${S.libKind === "all"}">Tất cả <b>${num(counts.all)}</b></button>`;
   KINDS.forEach(([k, label]) => { if (counts[k]) h += `<button class="fchip" type="button" data-kind="${k}" aria-pressed="${S.libKind === k}">${tile(k)}${label} <b>${num(counts[k])}</b></button>`; });
   h += `</div><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px"><input class="lib-filter" id="libText" type="search" placeholder="Lọc theo tên hoặc địa chỉ" value="${esc(S.libText)}"><span style="color:var(--muted);font-size:13px">${num(shown.length)} kết quả${shown.length ? ` · <button class="lk txt" type="button" data-act="copyShown">sao chép các link này</button>` : ""}</span></div>`;
@@ -1460,7 +1460,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function scanInfoText() {
   const st = SCAN.state;
   if (SCAN.running) return "Đang quét, bạn có thể đọc tài liệu trong lúc chờ.";
-  if (st && st.at) return `Lần quét gần nhất ${fmtTime(st.at)}: ${num(st.folders)} thư mục, ${num(st.files)} file. Quét xong, nhắn Claude “cập nhật github” để bản web mở được từng cấp.`;
+  if (st && st.at) return `Lần quét gần nhất ${fmtTime(st.at)}: ${num(st.folders)} thư mục, ${num(st.files)} file. Bấm “Tải file cho bản web”, rồi gửi file drive-index.json vào khung chat cho Claude để đưa lên GitHub.`;
   return "Quét một lần để bản GitHub Pages mở được từng cấp thư mục ngay trong trang. Mất vài phút với tài liệu lớn.";
 }
 function scanPaint() {
@@ -1472,6 +1472,7 @@ function scanPaint() {
   pb.querySelector("i").style.width = SCAN.pct + "%";
   $("scanTxt").textContent = SCAN.txt; $("scanInfo").textContent = scanInfoText();
   $("scanBtn").textContent = SCAN.running ? "Đang quét…" : "Quét lại";
+  if ($("exportBtn")) $("exportBtn").hidden = SCAN.running || !SCAN.state;
   $("scanBtn").disabled = SCAN.running;
 }
 async function loadScanState() {
@@ -1532,6 +1533,32 @@ async function runScan() {
     Object.assign(SCAN, { running: false, txt: e && e.code === "needs_reauth" ? "Kết nối Google Drive đã hết hạn, kết nối lại trong claude.ai → Settings → Connectors." : e && e.code === "server_not_connected" ? "Chưa kết nối Google Drive trong claude.ai → Settings → Connectors." : "Quét bị dừng: " + ((e && e.message) || "lỗi không rõ") });
   }
   scanPaint();
+}
+
+async function exportIdx() {
+  const btn = $("exportBtn");
+  try {
+    if (!S.db) throw new Error("chưa kết nối được kho dữ liệu của trang");
+    if (btn) { btn.disabled = true; btn.textContent = "Đang gói dữ liệu…"; }
+    const snap = await S.db.collection("webidx").where("doc", "==", DOC_ID).limit(1000).get();
+    const folders = {};
+    snap.docs.forEach((d) => {
+      const v = d.data(); if (!v || !v.id) return;
+      const seen = new Set();
+      folders[v.id] = (v.items || []).filter((it) => it && it.i && !seen.has(it.i) && seen.add(it.i));
+    });
+    const n = Object.keys(folders).length;
+    if (!n) throw new Error("chưa có kết quả quét, hãy bấm Quét thư mục Drive trước");
+    const data = JSON.stringify({ v: 1, doc: DOC_ID, at: (SCAN.state && SCAN.state.at) || Date.now(), folders });
+    const dl = await claude.use("downloads");
+    if (!dl) throw new Error("trình xem này không cho tải file");
+    await dl.save({ filename: "drive-index.json", data });
+    toast(`Đã tạo drive-index.json (${n} thư mục). Gửi file này vào khung chat cho Claude.`);
+  } catch (e) {
+    toast("Chưa tải được file: " + ((e && e.message) || "bạn đã huỷ"));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Tải file cho bản web"; }
+  }
 }
 
 /* ---------- routing ---------- */
@@ -1595,6 +1622,7 @@ document.addEventListener("click", (e) => {
   else if (act === "copyShown") copy((S._shown || []).slice(0, 2000).map((l) => l.url).join("\n"), `Đã sao chép ${Math.min((S._shown || []).length, 2000)} link`);
   else if (act === "lib") openLib();
   else if (act === "scan") runScan();
+  else if (act === "exportIdx") exportIdx();
   else if (act === "more") { S.libLimit += 200; const st = $("main").scrollTop; renderMain(); $("main").scrollTop = st; }
   else if (act === "fs+" || act === "fs-") { const fs = Math.max(12, Math.min(22, lsGet("fs2", 15) + (act === "fs+" ? 1 : -1))); lsSet("fs2", fs); document.documentElement.style.setProperty("--fs", fs + "px"); }
 });
