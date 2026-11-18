@@ -341,6 +341,11 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 .addf .btn { height: 40px; }
 .adderr { grid-column: 1 / -1; margin: 0; color: #c2410c; font-size: 13px; }
 .adderr:empty { display: none; }
+.scanbox { display: grid; grid-template-columns: 1fr auto; gap: 10px 16px; align-items: center; margin: 16px 0 4px; padding: 14px 16px; border-radius: 14px; border: 1px dashed color-mix(in oklab, var(--gold) 55%, var(--line)); background: var(--panel); }
+.scanbox .scan-t b { display: block; font-size: 13.5px; }
+.scanbox .scan-t small { color: var(--muted); font-size: 12px; }
+.scanbox .prog { grid-column: 1 / -1; max-width: none; margin: 0; }
+.scanbox .prog[hidden] { display: none; }
 .apibox summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
 .apibox[open] summary { margin-bottom: 8px; }
 .lib-h { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
@@ -919,6 +924,7 @@ function renderLinks(main) {
   const q = norm(S.libText.trim());
   const shown = list.filter((l) => (S.libKind === "all" || l.kind === S.libKind) && (!q || l.nl.includes(q)));
   let h = `<div class="page wide"><nav class="crumbs"><span>Thư viện tài nguyên</span></nav><h1 class="ttl">Mọi tài nguyên trong một chỗ</h1><p class="lead">Gom ${num(list.length)} link từ ${S.order.length} tab, đã bỏ trùng. Bấm vào một dòng để xem ngay bên dưới.</p>`;
+  if (IN_CLAUDE) h += `<div class="scanbox" id="scanBox"><div class="scan-t"><b>Cây thư mục cho bản web (GitHub Pages)</b><small id="scanInfo">${esc(scanInfoText())}</small></div><button class="btn pri" type="button" data-act="scan" id="scanBtn">${SCAN.running ? "Đang quét…" : "Quét thư mục Drive"}</button><div class="prog" id="scanProg" ${SCAN.running ? "" : "hidden"}><div class="prog-bar"><i style="width:${SCAN.pct || 0}%"></i></div><small><span id="scanTxt">${esc(SCAN.txt || "")}</span><span></span></small></div></div>`;
   h += `<div class="filters" role="group" aria-label="Loại tài nguyên"><button class="fchip" type="button" data-kind="all" aria-pressed="${S.libKind === "all"}">Tất cả <b>${num(counts.all)}</b></button>`;
   KINDS.forEach(([k, label]) => { if (counts[k]) h += `<button class="fchip" type="button" data-kind="${k}" aria-pressed="${S.libKind === k}">${tile(k)}${label} <b>${num(counts[k])}</b></button>`; });
   h += `</div><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px"><input class="lib-filter" id="libText" type="search" placeholder="Lọc theo tên hoặc địa chỉ" value="${esc(S.libText)}"><span style="color:var(--muted);font-size:13px">${num(shown.length)} kết quả${shown.length ? ` · <button class="lk txt" type="button" data-act="copyShown">sao chép các link này</button>` : ""}</span></div>`;
@@ -1046,9 +1052,23 @@ function pvToggle(btn) {
   panel.innerHTML = `<div class="pv-h">${tile(kind)}<div class="pv-t"><b>${esc(spec.title)}</b><small>${esc(sub)}</small></div>${drive || (!IN_CLAUDE && embedOf(url, null)) ? `<button class="ib" type="button" data-pvact="fs" title="Toàn màn hình">${svg(I.full)}</button>` : ""}<button class="ib" type="button" data-pvact="copy" title="Sao chép link">${svg(I.copy)}</button><a class="ib" target="_blank" rel="noopener" href="${esc(url)}" title="Mở trong tab mới">${svg(I.ext)}</a><button class="ib" type="button" data-pvact="close" title="Thu gọn">${svg(I.x)}</button></div><div class="pv-b"></div>`;
   host.after(panel);
   btn._panel = panel; btn.setAttribute("aria-expanded", "true");
+  if (!IN_CLAUDE && drive && !HAS_API) { pvOffline(panel, kind); return; }
   const emb = IN_CLAUDE || (drive && HAS_API) ? null : embedOf(url, drive);
   if (emb) pvEmbed(panel, emb, kind);
   else if (drive) pvLoad(panel, false); else pvExternal(panel, kind);
+}
+/* Web build without a server: folders come from drive-index.json (a scan made from the Claude page) */
+let IDX = null, idxP = null;
+const loadIdx = () => (idxP = idxP || fetch("drive-index.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null).then((j) => (IDX = j)));
+async function pvOffline(panel, kind) {
+  const s = panel._spec;
+  if (s.t === "folder") {
+    pvSpin(panel, "Đang mở thư mục…");
+    await loadIdx();
+    if (IDX && IDX.folders && IDX.folders[s.id]) return pvFolder(panel).catch((e) => pvError(panel, e));
+  }
+  if (s.t === "file" && /^image\/(png|jpe?g|gif|webp|bmp)$/.test(s.mime || "")) return pvThumbImage(panel);
+  pvEmbed(panel, embedOf(s.url || openUrl(s), { t: s.t, id: s.id }), kind);
 }
 function pvClose(panel) {
   [panel, ...panel.querySelectorAll(".pv")].forEach((p) => (p._urls || []).forEach((u) => { try { URL.revokeObjectURL(u); } catch (e) {} }));
@@ -1236,7 +1256,9 @@ async function dl(mcp, id, exportMime) {
 async function pvFolder(panel, token, moreBtn) {
   const s = panel._spec, args = { query: `parentId = '${s.id}'`, pageSize: 100, excludeContentSnippets: true };
   if (token) { args.pageToken = token; moreBtn.disabled = true; moreBtn.textContent = "Đang tải…"; } else pvSpin(panel, "Đang mở thư mục…");
-  const p = IN_CLAUDE ? ((await panel._mcp.callTool(DRIVE, "search_files", args, CACHE)).payload || {}) : await apiGet({ action: "list", id: s.id });
+  const p = IN_CLAUDE ? ((await panel._mcp.callTool(DRIVE, "search_files", args, CACHE)).payload || {})
+    : HAS_API ? await apiGet({ action: "list", id: s.id })
+    : { files: ((IDX && IDX.folders && IDX.folders[s.id]) || []).map((x) => ({ id: x.i, title: x.n, mimeType: x.m, fileSize: x.s, modifiedTime: x.d })), note: IDX && IDX.at ? ` · danh sách quét ngày ${fmtDate(IDX.at)}` : "" };
   if (!IN_CLAUDE && p.truncated) p.note = " (thư mục quá lớn, chỉ hiện 400 mục đầu)";
   const files = (p.files || []).filter((f) => !f.trashed);
   const body = pvBody(panel);
@@ -1431,6 +1453,81 @@ function pvError(panel, e) {
   pvMsg(panel, msg, `${retry ? `<button class="btn sm pri" type="button" data-pvact="retry">${c === "approval_required" || c === "consent_required" ? "Cho phép và thử lại" : "Thử lại"}</button>` : ""}${extBtn(s)}`);
 }
 
+/* ---------- scan Drive folders for the web build (Claude page only) ---------- */
+const SCAN = { running: false, pct: 0, txt: "", state: null };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function scanInfoText() {
+  const st = SCAN.state;
+  if (SCAN.running) return "Đang quét, bạn có thể đọc tài liệu trong lúc chờ.";
+  if (st && st.at) return `Lần quét gần nhất ${fmtTime(st.at)}: ${num(st.folders)} thư mục, ${num(st.files)} file. Quét xong, nhắn Claude “cập nhật github” để bản web mở được từng cấp.`;
+  return "Quét một lần để bản GitHub Pages mở được từng cấp thư mục ngay trong trang. Mất vài phút với tài liệu lớn.";
+}
+function scanPaint() {
+  const pb = $("scanProg"); if (!pb) return;
+  pb.hidden = !SCAN.running && !SCAN.txt;
+  pb.querySelector("i").style.width = SCAN.pct + "%";
+  $("scanTxt").textContent = SCAN.txt; $("scanInfo").textContent = scanInfoText();
+  $("scanBtn").textContent = SCAN.running ? "Đang quét…" : "Quét lại";
+  $("scanBtn").disabled = SCAN.running;
+}
+async function loadScanState() {
+  if (!S.db) return;
+  try { const d = await S.db.doc("webidx_state/" + DOC_ID).get(); SCAN.state = d.exists ? d.data() : null; if ($("scanInfo")) $("scanInfo").textContent = scanInfoText(); } catch (e) {}
+}
+async function runScan() {
+  if (SCAN.running) return;
+  const mcp = await getMcp();
+  if (!mcp) { toast("Cần mở trang trong Claude và kết nối Google Drive để quét"); return; }
+  if (!S.db) { toast("Trang chưa sẵn sàng lưu kết quả, thử lại sau vài giây"); return; }
+  const roots = [...new Set(allLinks().map((l) => driveIdOf(l.url)).filter((d) => d && d.t === "folder").map((d) => d.id))];
+  const seen = new Set(roots), queue = roots.slice(), out = {};
+  let active = 0, done = 0, files = 0, failed = 0;
+  Object.assign(SCAN, { running: true, pct: 0, txt: `Đang quét ${roots.length} thư mục gốc…` }); scanPaint();
+  const LIMIT = 2000;
+  async function one(id) {
+    const items = []; let token, tries = 0;
+    do {
+      const args = { query: `parentId = '${id}'`, pageSize: 100, excludeContentSnippets: true };
+      if (token) args.pageToken = token;
+      let p;
+      try { p = (await mcp.callTool(DRIVE, "search_files", args, { cache: false })).payload || {}; tries = 0; }
+      catch (e) { if (e && e.retryable && tries++ < 2) { await sleep(e.retryAfterMs || 1500); continue; } if (e && ["needs_reauth", "server_not_connected", "not_in_manifest", "blocked_by_policy", "approval_required"].includes(e.code)) throw e; failed++; break; }
+      (p.files || []).forEach((f) => {
+        if (f.trashed) return;
+        const isF = /google-apps\.folder/.test(f.mimeType || "");
+        const it = { i: f.id, n: f.title || "", m: f.mimeType || "" };
+        if (f.fileSize) it.s = +f.fileSize;
+        if (f.modifiedTime) it.d = String(f.modifiedTime).slice(0, 10);
+        items.push(it);
+        if (isF) { if (!seen.has(f.id) && seen.size < LIMIT) { seen.add(f.id); queue.push(f.id); } } else files++;
+      });
+      token = p.nextPageToken;
+    } while (token);
+    out[id] = items;
+  }
+  try {
+    await Promise.all([0, 1, 2, 3].map(async () => {
+      while (queue.length || active) {
+        if (!queue.length) { await sleep(150); continue; }
+        const id = queue.shift(); active++;
+        try { await one(id); } finally { active--; done++; }
+        SCAN.pct = Math.min(97, Math.round((done / Math.max(seen.size, 1)) * 92));
+        SCAN.txt = `Đã quét ${num(done)} / ${num(seen.size)} thư mục · ${num(files)} file`; scanPaint();
+      }
+    }));
+    SCAN.txt = `Đang lưu ${num(Object.keys(out).length)} thư mục…`; scanPaint();
+    const ids = Object.keys(out); let k = 0;
+    for (const id of ids) { await S.db.doc(`webidx/${id}`).set({ id, doc: DOC_ID, items: out[id] }); k++; if (k % 10 === 0) { SCAN.pct = 92 + Math.round((k / ids.length) * 8); SCAN.txt = `Đang lưu ${num(k)} / ${num(ids.length)} thư mục…`; scanPaint(); } }
+    SCAN.state = { at: Date.now(), folders: ids.length, files, roots, failed };
+    await S.db.doc("webidx_state/" + DOC_ID).set(SCAN.state);
+    Object.assign(SCAN, { running: false, pct: 100, txt: `Xong: ${num(ids.length)} thư mục, ${num(files)} file${failed ? `, ${failed} thư mục không đọc được` : ""}.` });
+    toast("Đã quét xong cây thư mục Drive");
+  } catch (e) {
+    Object.assign(SCAN, { running: false, txt: e && e.code === "needs_reauth" ? "Kết nối Google Drive đã hết hạn, kết nối lại trong claude.ai → Settings → Connectors." : e && e.code === "server_not_connected" ? "Chưa kết nối Google Drive trong claude.ai → Settings → Connectors." : "Quét bị dừng: " + ((e && e.message) || "lỗi không rõ") });
+  }
+  scanPaint();
+}
+
 /* ---------- routing ---------- */
 function parseHash() {
   const h = (location.hash || "").slice(1);
@@ -1491,6 +1588,7 @@ document.addEventListener("click", (e) => {
   else if (act === "copyAllLinks" && tab) copy(info(tab.id).links.map((l) => l.url).join("\n"), `Đã sao chép ${info(tab.id).links.length} link`);
   else if (act === "copyShown") copy((S._shown || []).slice(0, 2000).map((l) => l.url).join("\n"), `Đã sao chép ${Math.min((S._shown || []).length, 2000)} link`);
   else if (act === "lib") openLib();
+  else if (act === "scan") runScan();
   else if (act === "more") { S.libLimit += 200; const st = $("main").scrollTop; renderMain(); $("main").scrollTop = st; }
   else if (act === "fs+" || act === "fs-") { const fs = Math.max(12, Math.min(22, lsGet("fs2", 15) + (act === "fs+" ? 1 : -1))); lsSet("fs2", fs); document.documentElement.style.setProperty("--fs", fs + "px"); }
 });
@@ -1549,6 +1647,7 @@ function startDb() {
     if (S.dbUnsub) { try { S.dbUnsub(); } catch (e) {} S.dbUnsub = null; }
     claude.use("user").then((u) => { if (u && u.can) u.can("data.write").then((v) => { if (v === false) S.canWrite = false; }, () => {}); }, () => {});
     startLibSync(db);
+    loadScanState();
     const id = DOC_ID;
     S.dbUnsub = db.doc(syncPath()).onSnapshot((snap) => {
       if (DOC_ID !== id) return;
@@ -1790,6 +1889,7 @@ applyTheme(gGet("theme", "light"));
 setNav(gGet("nav", true), false);
 
 /* ---------- boot ---------- */
+if (!IN_CLAUDE && !HAS_API) loadIdx();
 S.route = parseHash();
 renderBrand();
 renderMain();
