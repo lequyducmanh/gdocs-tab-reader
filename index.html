@@ -1156,7 +1156,23 @@ function pvEmbed(panel, src, kind) {
   const ratio = kind === "video" && !d ? "aspect-ratio:16/9;" : "";
   pvBody(panel).innerHTML = `<div class="emb${/facebook/.test(src) ? " fb" : ""}" style="${ratio}height:${tall}"><iframe src="${esc(src)}" title="${esc(s.title)}" loading="lazy" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><p class="pv-msg" style="font-size:12px;margin-top:8px">${d ? "Trình xem của Google Drive. Nếu không hiện, có thể tài khoản Google trên trình duyệt này chưa có quyền xem file." : "Nếu nội dung không hiện, có thể bài/video không công khai, hãy mở ở tab mới."}</p>`;
 }
-const getMcp = () => (mcpP = mcpP || (window.claude && claude.use ? claude.use("mcp").catch(() => null) : Promise.resolve(null)));
+/* the connector client; a failure is remembered with its reason but not cached, so "Thử lại" really retries */
+let MCP_ERR = null;
+const getMcp = () => {
+  if (!(window.claude && claude.use)) return Promise.resolve(null);
+  if (!mcpP) mcpP = claude.use("mcp").then((m) => { MCP_ERR = m ? null : { code: "unavailable" }; if (!m) mcpP = null; return m || null; }, (e) => { MCP_ERR = e || { code: "unavailable" }; mcpP = null; return null; });
+  return mcpP;
+};
+function mcpMissingMsg(app) {
+  app = app || "Google Drive";
+  if (!IN_CLAUDE) return `Để xem ngay tại đây, hãy mở trang bên trong Claude và kết nối ${app}. Bạn vẫn có thể mở file ở tab mới.`;
+  const e = MCP_ERR || {}, c = String(e.code || ""), m = e.message ? ` (${String(e.message).slice(0, 120)})` : "";
+  if (/not_connected|not_found|selection/.test(c)) return `Chưa kết nối ${app}. Vào claude.ai → Settings → Connectors, bật ${app}, rồi bấm Thử lại.`;
+  if (/reauth/.test(c)) return `Kết nối ${app} đã hết hạn. Kết nối lại trong claude.ai → Settings → Connectors, rồi bấm Thử lại.`;
+  if (/approval|consent|denied|declin/.test(c)) return `Trang cần bạn cho phép dùng ${app}. Bấm Thử lại rồi chọn Cho phép.`;
+  if (/policy|disabled|blocked/.test(c)) return `Tổ chức hoặc chế độ xem hiện tại đang chặn kết nối ${app} cho trang này${m}.`;
+  return `Trang chưa dùng được kết nối ${app}${m}. Hãy kiểm tra ${app} đã bật trong claude.ai → Settings → Connectors và bạn đang mở trang ngay trong Claude (không phải bản công khai), rồi bấm Thử lại.`;
+}
 function kindOfMime(mime, t) {
   if (t === "folder" || /folder/.test(mime || "")) return "folder";
   if (["gdoc", "gsheet", "gslide"].includes(t) || /google-apps\.(document|spreadsheet|presentation)/.test(mime || "")) return "doc";
@@ -1299,7 +1315,7 @@ async function pvLoad(panel, force) {
   pvSpin(panel);
   if (HAS_API) return pvLoadApi(panel, force);
   const mcp = await getMcp();
-  if (!mcp) { pvMsg(panel, "Để xem ngay tại đây, hãy mở trang này bên trong Claude và kết nối Google Drive. Bạn vẫn có thể mở file ở tab mới.", extBtn(s, true)); return; }
+  if (!mcp) { pvMsg(panel, mcpMissingMsg(s.t === "gdoc" ? "Google Docs" : "Google Drive"), `${IN_CLAUDE ? '<button class="btn sm pri" type="button" data-pvact="retry">Thử lại</button>' : ""}${extBtn(s, !IN_CLAUDE)}`); return; }
   panel._mcp = mcp;
   try {
     if (s.t === "folder") return await pvFolder(panel);
@@ -1898,7 +1914,7 @@ const DENIALS = new Set(["needs_reauth", "server_not_connected", "selection_requ
 function startLive() {
   getMcp().then((mcp) => {
     if (!mcp && HAS_API) { startApiLive(); return; }
-    if (!mcp) { if (!IN_CLAUDE && DOC_ID !== DEFAULT_DOC.id) { S.live.state = "none"; S.live.note = "Xem bằng trình xem của Google"; renderStatus(); renderMain(); return; } S.live.state = DOC_ID === DEFAULT_DOC.id ? "idle" : "none"; S.live.note = DOC_ID === DEFAULT_DOC.id ? "Đang xem bản đồng bộ. Cập nhật trực tiếp cần mở trang trong Claude với Google Docs connector." : "Để đọc tài liệu này, hãy mở trang bên trong Claude và kết nối Google Docs."; renderStatus(); if (!S.model) renderMain(); return; }
+    if (!mcp) { if (!IN_CLAUDE && DOC_ID !== DEFAULT_DOC.id) { S.live.state = "none"; S.live.note = "Xem bằng trình xem của Google"; renderStatus(); renderMain(); return; } S.live.state = DOC_ID === DEFAULT_DOC.id ? "idle" : "none"; S.live.note = IN_CLAUDE ? (DOC_ID === DEFAULT_DOC.id ? "Đang xem bản đồng bộ. " : "") + mcpMissingMsg("Google Docs") : DOC_ID === DEFAULT_DOC.id ? "Đang xem bản đồng bộ. Cập nhật trực tiếp cần mở trang trong Claude với Google Docs connector." : "Để đọc tài liệu này, hãy mở trang bên trong Claude và kết nối Google Docs."; renderStatus(); if (!S.model) renderMain(); return; }
     S.mcp = mcp; S.live.state = "loading"; renderStatus();
     const id = DOC_ID;
     if (S.unwatch) { try { S.unwatch(); } catch (e) {} }
@@ -2202,7 +2218,7 @@ async function fetchMeta(id) {
 async function listFolder(id, token, fresh) {
   const clean = (arr) => (arr || []).filter((f) => f && f.id && !f.trashed).map((f) => ({ id: f.id, title: f.title || "", mimeType: f.mimeType || "", fileSize: +f.fileSize || 0, modifiedTime: f.modifiedTime || "" }));
   if (IN_CLAUDE) {
-    const mcp = await getMcp(); if (!mcp) throw { code: "no_mcp", message: "cần mở trang trong Claude và kết nối Google Drive" };
+    const mcp = await getMcp(); if (!mcp) throw { code: "no_mcp" };
     const args = { query: `parentId = '${id}'`, pageSize: 100, excludeContentSnippets: true }; if (token) args.pageToken = token;
     const p = (await mcp.callTool(DRIVE, "search_files", args, fresh ? { cache: false } : CACHE)).payload || {};
     return { files: clean(p.files), next: p.nextPageToken || null };
@@ -2281,7 +2297,8 @@ function fKidsHtml(id) {
 function fErrHtml(id, e) {
   if (e && e.code === "noidx") return `<p class="pv-msg">Thư mục này chưa có trong bản quét của bản web, nên chưa mở từng cấp được ở đây. Tạm thời xem bằng trình xem của Google bên dưới, hoặc mở trang trên Claude để xem đầy đủ.</p><div class="emb" style="height:460px;margin:6px 0 8px"><iframe src="https://drive.google.com/embeddedfolderview?id=${esc(id)}#grid" title="Thư mục" loading="lazy"></iframe></div>`;
   const c = e && e.code, ask = c === "approval_required" || c === "consent_required";
-  const msg = c === "api" || c === "api_net" ? (c === "api" ? apiMsg(e) : "Không gọi được máy chủ Apps Script: " + e.message + ".")
+  const msg = c === "no_mcp" ? mcpMissingMsg("Google Drive")
+    : c === "api" || c === "api_net" ? (c === "api" ? apiMsg(e) : "Không gọi được máy chủ Apps Script: " + e.message + ".")
     : c === "needs_reauth" ? "Kết nối Google Drive đã hết hạn. Kết nối lại trong claude.ai → Settings → Connectors."
     : c === "server_not_connected" || c === "server_not_found" || c === "selection_required" ? "Cần kết nối Google Drive trong claude.ai → Settings → Connectors để mở thư mục tại đây."
     : ask ? "Trang cần bạn cho phép đọc Google Drive."
