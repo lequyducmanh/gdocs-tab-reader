@@ -531,6 +531,7 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
   <div class="lib-h"><span>Lịch sử đã mở</span><span id="libCount"></span></div>
   <div class="dl" id="libList"></div>
   <p class="libnote" id="libNote"></p>
+  <div class="scanbox" id="scanBox2" hidden><div class="scan-t"><b>Cây thư mục cho bản web (GitHub Pages)</b><small>Quét để bản web mở được từng cấp thư mục ngay trong trang.</small></div><button class="btn pri" type="button" data-act="scan">Quét thư mục Drive</button></div>
   <details class="apibox" id="apiBox" hidden><summary>Máy chủ cho bản web (Google Apps Script)</summary>
     <p class="libnote">Bản GitHub Pages cần địa chỉ Web App của Apps Script để mở từng cấp thư mục Drive và tự cập nhật tab mới. Xem hướng dẫn trong README của repo.</p>
     <form class="addf" id="apiForm" style="grid-template-columns:1fr auto"><label for="apiUrl">Địa chỉ Web App<input id="apiUrl" type="text" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec"></label><button class="btn pri" type="submit">Lưu</button><p class="adderr" id="apiMsg"></p></form>
@@ -1463,6 +1464,9 @@ function scanInfoText() {
   return "Quét một lần để bản GitHub Pages mở được từng cấp thư mục ngay trong trang. Mất vài phút với tài liệu lớn.";
 }
 function scanPaint() {
+  if (SCAN.running) banner("Đang quét thư mục Drive cho bản web · " + (SCAN.txt || "bắt đầu…") + " · cứ để trang mở, bạn vẫn đọc tài liệu bình thường.");
+  else if (SCAN.txt && /^Xong/.test(SCAN.txt)) banner(SCAN.txt + " Giờ bạn nhắn Claude “quét xong” để đưa lên GitHub.");
+  else if (SCAN.txt) banner(SCAN.txt, "Quét lại", runScan);
   const pb = $("scanProg"); if (!pb) return;
   pb.hidden = !SCAN.running && !SCAN.txt;
   pb.querySelector("i").style.width = SCAN.pct + "%";
@@ -1472,7 +1476,9 @@ function scanPaint() {
 }
 async function loadScanState() {
   if (!S.db) return;
-  try { const d = await S.db.doc("webidx_state/" + DOC_ID).get(); SCAN.state = d.exists ? d.data() : null; if ($("scanInfo")) $("scanInfo").textContent = scanInfoText(); } catch (e) {}
+  try { const d = await S.db.doc("webidx_state/" + DOC_ID).get(); SCAN.state = d.exists ? d.data() : null; if ($("scanInfo")) $("scanInfo").textContent = scanInfoText(); } catch (e) { return; }
+  /* never scanned for this document: start by itself so the web build gets its folder tree */
+  if (!SCAN.state && !SCAN.running && !S._autoScan) { S._autoScan = true; setTimeout(() => { if (S.model) runScan(); }, 4000); }
 }
 async function runScan() {
   if (SCAN.running) return;
@@ -1861,6 +1867,7 @@ $("libList").addEventListener("click", (e) => {
     inp.addEventListener("blur", () => { if (inp.isConnected) libSave(id, { name: inp.value.trim() }); });
   }
 });
+if (IN_CLAUDE) $("scanBox2").hidden = false;
 if (!IN_CLAUDE) {
   $("apiBox").hidden = false; $("apiUrl").value = API;
   $("apiForm").addEventListener("submit", (e) => {
