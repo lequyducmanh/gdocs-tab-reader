@@ -24,6 +24,8 @@ Trình đọc Google Docs nhiều tab, dựng cho kho tài liệu dự án **Vin
 | `index.html` | Toàn bộ giao diện và logic (HTML + CSS + JS, không cần build) |
 | `convert.js` | Chuyển JSON của Google Docs API (`documents.get`, có tabs) sang mô hình gọn để hiển thị. Trang web và bước tạo bản lưu dùng chung file này |
 | `snapshot.json` | Bản lưu của tài liệu gốc, giúp trang mở ngay khi chưa kịp đọc dữ liệu trực tiếp |
+| `config.js` | Cấu hình bản web: địa chỉ máy chủ Apps Script |
+| `apps-script/` | Mã máy chủ Apps Script cho bản GitHub Pages (`Code.gs`, `Convert.gs`, `appsscript.json`) |
 
 ## Cách chạy
 
@@ -34,11 +36,23 @@ Trang được viết để chạy như một **Claude artifact**. Đọc trực
 
 ### Bản GitHub Pages
 
-Mở trang ngoài Claude (ví dụ GitHub Pages) thì:
-- Tài liệu gốc hiển thị từ `snapshot.json`, vẫn có tìm kiếm, lịch ngày và thư viện tài nguyên.
-- Link mở xổ xuống bằng **trình xem nhúng của Google** (Drive, Docs, Sheets, Slides) và của YouTube, Canva, Facebook. Người xem cần đăng nhập Google có quyền xem file.
-- Không tự cập nhật tab mới, vì cần connector của Claude. Muốn cập nhật thì tạo lại `snapshot.json` rồi đẩy lên.
-- Link Google Docs khác dán vào sẽ hiện bằng trình xem của Google, không có tìm kiếm trên mọi tab.
+Ngoài Claude không có connector. Vì vậy bản web dùng một **máy chủ nhỏ trên Google Apps Script** (miễn phí, chạy bằng tài khoản Google của bạn) để:
+- mở **từng cấp thư mục Drive** ngay trong trang;
+- **tự cập nhật** khi file Google Docs có tab mới (kiểm tra mỗi 2 phút);
+- mở được cả tài liệu Google Docs khác dán vào, có đủ tab và tìm kiếm.
+
+Máy chủ chỉ trả về những gì đang chia sẻ **"Bất kỳ ai có đường liên kết"**. File riêng tư trong Drive không bị lộ.
+
+**Cài đặt (khoảng 5 phút, làm một lần):**
+1. Vào https://script.google.com → **Dự án mới**. Đặt tên `gdocs-tab-reader`.
+2. Dán nội dung `apps-script/Code.gs` vào file `Code.gs`.
+3. Bấm **+** → *Tập lệnh* → đặt tên `Convert`, rồi dán nội dung `apps-script/Convert.gs`.
+4. ⚙️ **Cài đặt dự án** → bật *Hiển thị tệp kê khai "appsscript.json"*. Mở `appsscript.json` và dán nội dung `apps-script/appsscript.json`.
+5. Chọn hàm `testSetup` → **Chạy** → cấp quyền (Nâng cao → Đi tới dự án). Nhật ký báo `OK: … · 100 tab` là được.
+6. **Triển khai** → *Triển khai mới* → loại **Ứng dụng web**: *Thực thi với tư cách* **Tôi**, *Ai có quyền truy cập* **Bất kỳ ai** → Triển khai → sao chép địa chỉ `…/exec`.
+7. Dán địa chỉ đó vào `config.js` (trường `api`) rồi đẩy lên GitHub. Cách khác: dán vào ô *Máy chủ cho bản web* trong cửa sổ "Đổi tài liệu" của trang (chỉ lưu trên trình duyệt đó).
+
+Chưa cài máy chủ thì bản web vẫn hiển thị bản lưu `snapshot.json`, và link mở bằng trình xem nhúng của Google, YouTube, Canva, Facebook. Riêng thư mục con sẽ mở ra tab mới.
 
 ### Tạo lại bản lưu
 

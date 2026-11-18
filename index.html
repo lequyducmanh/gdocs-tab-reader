@@ -341,6 +341,8 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
 .addf .btn { height: 40px; }
 .adderr { grid-column: 1 / -1; margin: 0; color: #c2410c; font-size: 13px; }
 .adderr:empty { display: none; }
+.apibox summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--muted); }
+.apibox[open] summary { margin-bottom: 8px; }
 .lib-h { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
 .dl { display: grid; gap: 8px; }
 .drow { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); }
@@ -524,9 +526,14 @@ mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 1px
   <div class="lib-h"><span>Lịch sử đã mở</span><span id="libCount"></span></div>
   <div class="dl" id="libList"></div>
   <p class="libnote" id="libNote"></p>
+  <details class="apibox" id="apiBox" hidden><summary>Máy chủ cho bản web (Google Apps Script)</summary>
+    <p class="libnote">Bản GitHub Pages cần địa chỉ Web App của Apps Script để mở từng cấp thư mục Drive và tự cập nhật tab mới. Xem hướng dẫn trong README của repo.</p>
+    <form class="addf" id="apiForm" style="grid-template-columns:1fr auto"><label for="apiUrl">Địa chỉ Web App<input id="apiUrl" type="text" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec"></label><button class="btn pri" type="submit">Lưu</button><p class="adderr" id="apiMsg"></p></form>
+  </details>
 </div></div>
 <div class="modal" id="copyModal" hidden><div class="box" role="dialog" aria-modal="true" aria-labelledby="copyH"><b id="copyH">Sao chép thủ công</b><span style="color:var(--muted);font-size:13px">Nội dung đã được chọn sẵn, nhấn Ctrl+C (hoặc ⌘C) để sao chép.</span><textarea id="copyArea" readonly></textarea><div style="display:flex;justify-content:flex-end"><button class="btn" id="copyClose" type="button">Đóng</button></div></div></div>
 
+<script src="config.js"></script>
 <script src="convert.js"></script>
 <script>
 (() => {
@@ -835,7 +842,7 @@ function tabToText(tab) {
 /* ---------- views ---------- */
 function renderMain(keep) {
   const main = $("main"), prevTop = main.scrollTop;
-  if (!S.model && !IN_CLAUDE && DOC_ID !== DEFAULT_DOC.id) {
+  if (!S.model && !IN_CLAUDE && !HAS_API && DOC_ID !== DEFAULT_DOC.id) {
     main.innerHTML = `<div class="page wide"><nav class="crumbs"><span>Xem bằng trình xem của Google</span></nav><h1 class="ttl">${esc(libName(DOC_ID))}</h1><p class="lead">Ngoài Claude, trang hiển thị tài liệu bằng trình xem của Google. Tìm kiếm trên mọi tab và lịch ngày chỉ có khi mở trang trong Claude.</p><div style="height:14px"></div><div class="emb docframe"><iframe src="https://docs.google.com/document/d/${esc(DOC_ID)}/preview" title="${esc(libName(DOC_ID))}" loading="lazy"></iframe></div></div>`;
     return;
   }
@@ -981,6 +988,21 @@ const TYPE_LABEL = { folder: "Thư mục Google Drive", gdoc: "Google Docs", gsh
 let mcpP;
 /* Outside Claude (e.g. GitHub Pages) there are no connectors, but the page may embed Google's own viewers. */
 const IN_CLAUDE = !!(window.claude && window.claude.use);
+const API = (((window.GDR_CONFIG && window.GDR_CONFIG.api) || "") || gGet("api", "")).trim();
+const HAS_API = !IN_CLAUDE && /^https:\/\/script\.google(usercontent)?\.com\//.test(API);
+const apiCache = new Map();
+async function apiGet(params, fresh) {
+  const key = JSON.stringify(params);
+  if (!fresh && apiCache.has(key)) return apiCache.get(key);
+  let r;
+  try { r = await fetch(API + (API.includes("?") ? "&" : "?") + new URLSearchParams(params)); }
+  catch (e) { throw { code: "api_net", message: "không gọi được máy chủ Apps Script" }; }
+  if (!r.ok) throw { code: "api_net", message: "máy chủ trả lỗi HTTP " + r.status };
+  let j; try { j = await r.json(); } catch (e) { throw { code: "api_net", message: "máy chủ trả dữ liệu không đọc được (kiểm tra quyền truy cập Web App là “Bất kỳ ai”)" }; }
+  if (j && j.error) throw { code: "api", message: j.error };
+  if (params.action !== "doc") apiCache.set(key, j);
+  return j;
+}
 function embedOf(url, d) {
   if (d) return { folder: `https://drive.google.com/embeddedfolderview?id=${d.id}#grid`, gdoc: `https://docs.google.com/document/d/${d.id}/preview`, gsheet: `https://docs.google.com/spreadsheets/d/${d.id}/preview`, gslide: `https://docs.google.com/presentation/d/${d.id}/embed`, file: `https://drive.google.com/file/d/${d.id}/preview` }[d.t];
   let m;
@@ -1024,7 +1046,7 @@ function pvToggle(btn) {
   panel.innerHTML = `<div class="pv-h">${tile(kind)}<div class="pv-t"><b>${esc(spec.title)}</b><small>${esc(sub)}</small></div>${drive || (!IN_CLAUDE && embedOf(url, null)) ? `<button class="ib" type="button" data-pvact="fs" title="Toàn màn hình">${svg(I.full)}</button>` : ""}<button class="ib" type="button" data-pvact="copy" title="Sao chép link">${svg(I.copy)}</button><a class="ib" target="_blank" rel="noopener" href="${esc(url)}" title="Mở trong tab mới">${svg(I.ext)}</a><button class="ib" type="button" data-pvact="close" title="Thu gọn">${svg(I.x)}</button></div><div class="pv-b"></div>`;
   host.after(panel);
   btn._panel = panel; btn.setAttribute("aria-expanded", "true");
-  const emb = IN_CLAUDE ? null : embedOf(url, drive);
+  const emb = IN_CLAUDE || (drive && HAS_API) ? null : embedOf(url, drive);
   if (emb) pvEmbed(panel, emb, kind);
   else if (drive) pvLoad(panel, false); else pvExternal(panel, kind);
 }
@@ -1105,6 +1127,7 @@ function pvAction(b) {
 async function pvLoad(panel, force) {
   const s = panel._spec;
   pvSpin(panel);
+  if (HAS_API) return pvLoadApi(panel, force);
   const mcp = await getMcp();
   if (!mcp) { pvMsg(panel, "Để xem ngay tại đây, hãy mở trang này bên trong Claude và kết nối Google Drive. Bạn vẫn có thể mở file ở tab mới.", extBtn(s, true)); return; }
   panel._mcp = mcp;
@@ -1120,6 +1143,35 @@ async function pvLoad(panel, force) {
     }
     await pvFile(panel, force);
   } catch (e) { pvError(panel, e); }
+}
+/* GitHub Pages: listing and documents come from the Apps Script server, files open in Google's own viewer */
+async function pvLoadApi(panel) {
+  const s = panel._spec, viewer = (t) => pvEmbed(panel, embedOf("", { t, id: s.id }), t === "file" ? kindOfMime(s.mime) : "doc");
+  try {
+    if (s.t === "folder") return await pvFolder(panel);
+    if (s.t === "gdoc") return await pvGdoc(panel);
+    if (s.t === "gsheet" || s.t === "gslide") return viewer(s.t);
+    if (!s.mime) {
+      const m = await apiGet({ action: "meta", id: s.id });
+      s.mime = m.mimeType || ""; s.size = +m.fileSize || 0; s.title = m.title || s.title; s.modified = m.modifiedTime;
+      pvSetHead(panel);
+    }
+    const m = s.mime;
+    if (/google-apps\.folder/.test(m)) { s.t = "folder"; return await pvFolder(panel); }
+    if (/google-apps\.document/.test(m)) { s.t = "gdoc"; return await pvGdoc(panel); }
+    if (/google-apps\.spreadsheet/.test(m)) return viewer("gsheet");
+    if (/google-apps\.presentation/.test(m)) return viewer("gslide");
+    if (/^image\/(png|jpe?g|gif|webp|bmp)$/.test(m)) return pvThumbImage(panel);
+    return viewer("file");
+  } catch (e) { pvError(panel, e); }
+}
+function pvThumbImage(panel) {
+  const s = panel._spec, body = pvBody(panel);
+  body.innerHTML = `<div class="pv-bar"><span><span class="sharp">Đang tải ảnh…</span> · <span class="zhint">chụm 2 ngón để zoom · kéo để di chuyển · bấm đúp để phóng</span></span>${zoomBar()}</div><div class="view-box fit"><img class="pv-img" alt="${esc(s.title)}" referrerpolicy="no-referrer" src="https://drive.google.com/thumbnail?id=${encodeURIComponent(s.id)}&sz=w4000"></div>`;
+  panel._zoomKind = "img"; panel._z = 1;
+  const img = body.querySelector("img");
+  img.onload = () => { const sh = body.querySelector(".sharp"); if (sh) sh.textContent = `Ảnh ${img.naturalWidth} × ${img.naturalHeight} px${s.size ? " · file gốc " + fmtSize(s.size) : ""}`; };
+  img.onerror = () => pvEmbed(panel, embedOf("", { t: "file", id: s.id }), "image");
 }
 async function pvFile(panel, force) {
   const s = panel._spec, m = s.mime || "", mcp = panel._mcp;
@@ -1184,7 +1236,8 @@ async function dl(mcp, id, exportMime) {
 async function pvFolder(panel, token, moreBtn) {
   const s = panel._spec, args = { query: `parentId = '${s.id}'`, pageSize: 100, excludeContentSnippets: true };
   if (token) { args.pageToken = token; moreBtn.disabled = true; moreBtn.textContent = "Đang tải…"; } else pvSpin(panel, "Đang mở thư mục…");
-  const p = (await panel._mcp.callTool(DRIVE, "search_files", args, CACHE)).payload || {};
+  const p = IN_CLAUDE ? ((await panel._mcp.callTool(DRIVE, "search_files", args, CACHE)).payload || {}) : await apiGet({ action: "list", id: s.id });
+  if (!IN_CLAUDE && p.truncated) p.note = " (thư mục quá lớn, chỉ hiện 400 mục đầu)";
   const files = (p.files || []).filter((f) => !f.trashed);
   const body = pvBody(panel);
   if (!token) {
@@ -1203,13 +1256,13 @@ async function pvFolder(panel, token, moreBtn) {
   }).join(""));
   if (p.nextPageToken) list.insertAdjacentHTML("afterend", `<div class="pv-acts"><button class="btn sm" type="button" data-pvact="more" data-token="${esc(p.nextPageToken)}">Tải thêm</button></div>`);
   const nf = panel._files.filter((f) => /folder/.test(f.mimeType)).length;
-  body.querySelector(".fl-sum").textContent = `${panel._files.length} mục${nf ? ` · ${nf} thư mục, ${panel._files.length - nf} file` : ""}${p.nextPageToken ? " (còn nữa)" : ""} · bấm từng mục để xem ngay bên dưới`;
+  body.querySelector(".fl-sum").textContent = `${panel._files.length} mục${nf ? ` · ${nf} thư mục, ${panel._files.length - nf} file` : ""}${p.nextPageToken ? " (còn nữa)" : ""}${p.note || ""} · bấm từng mục để xem ngay bên dưới`;
 }
 async function pvGdoc(panel) {
   const pg = progress(panel, 0, "Đang đọc tài liệu Google Docs");
-  const r = await panel._mcp.callTool(DOCS, "read_doc", { documentId: panel._spec.id }, CACHE);
-  pg.done();
-  const model = DocConvert.convert(r.payload !== undefined ? r.payload : r, Date.now());
+  let model;
+  if (IN_CLAUDE) { const r = await panel._mcp.callTool(DOCS, "read_doc", { documentId: panel._spec.id }, CACHE); pg.done(); model = DocConvert.convert(r.payload !== undefined ? r.payload : r, Date.now()); }
+  else { model = await apiGet({ action: "doc", id: panel._spec.id }); pg.done(); }
   panel._doc = model; panel._spec.title = model.title || panel._spec.title; panel._spec.mime = "application/vnd.google-apps.document"; panel._spec.t = "gdoc"; pvSetHead(panel);
   let h = "";
   h += `<div class="pv-bar">${model.tabs.length > 1 ? `<label>Tab <select class="pv-sel">${model.tabs.map((t, i) => `<option value="${i}">${"— ".repeat(t.depth)}${esc((t.emoji ? t.emoji + " " : "") + t.title)}</option>`).join("")}</select></label>` : "<span></span>"}<button class="btn sm pri" type="button" data-pvact="opendoc">Mở làm tài liệu chính</button></div>`;
@@ -1357,10 +1410,18 @@ async function pvPdf(panel, bytes) {
   panel._pdfMore = (n) => more(n).catch(() => {});
   await more(3);
 }
+function apiMsg(e) {
+  const m = (e && e.message) || "";
+  if (/not_public/.test(m)) return "Mục này chưa chia sẻ “Bất kỳ ai có đường liên kết”, nên bản web không mở được tại đây.";
+  if (/bad_id/.test(m)) return "Link không hợp lệ.";
+  if (/not found|No item|Không tìm thấy/i.test(m)) return "Không tìm thấy file, có thể đã bị xoá hoặc chuyển chỗ.";
+  return "Máy chủ Apps Script báo lỗi: " + m;
+}
 function pvError(panel, e) {
   const c = e && e.code, srv = (e && e.server) || DRIVE, s = panel._spec;
   let msg, retry = false;
-  if (c === "server_not_connected" || c === "selection_required" || c === "server_not_found") msg = `Cần thêm ${srv} trong claude.ai → Settings → Connectors để xem ngay tại đây.`;
+  if (c === "api" || c === "api_net") { msg = c === "api" ? apiMsg(e) : "Không gọi được máy chủ Apps Script: " + e.message + "."; retry = c === "api_net" || !/not_public|bad_id/.test(e.message || ""); }
+  else if (c === "server_not_connected" || c === "selection_required" || c === "server_not_found") msg = `Cần thêm ${srv} trong claude.ai → Settings → Connectors để xem ngay tại đây.`;
   else if (c === "needs_reauth") msg = `Kết nối ${srv} đã hết hạn. Kết nối lại trong claude.ai → Settings → Connectors.`;
   else if (c === "approval_required" || c === "consent_required") { msg = `Trang cần bạn cho phép đọc ${srv} để xem tại đây.`; retry = true; }
   else if (c === "not_in_manifest" || c === "blocked_by_policy") msg = "Xem trước đang bị tắt cho trang này.";
@@ -1539,6 +1600,7 @@ async function pushDb(model) {
 const DENIALS = new Set(["needs_reauth", "server_not_connected", "selection_required", "blocked_by_policy", "approval_required", "not_in_manifest", "server_not_found", "consent_required"]);
 function startLive() {
   getMcp().then((mcp) => {
+    if (!mcp && HAS_API) { startApiLive(); return; }
     if (!mcp) { if (!IN_CLAUDE && DOC_ID !== DEFAULT_DOC.id) { S.live.state = "none"; S.live.note = "Xem bằng trình xem của Google"; renderStatus(); renderMain(); return; } S.live.state = DOC_ID === DEFAULT_DOC.id ? "idle" : "none"; S.live.note = DOC_ID === DEFAULT_DOC.id ? "Đang xem bản đồng bộ. Cập nhật trực tiếp cần mở trang trong Claude với Google Docs connector." : "Để đọc tài liệu này, hãy mở trang bên trong Claude và kết nối Google Docs."; renderStatus(); if (!S.model) renderMain(); return; }
     S.mcp = mcp; S.live.state = "loading"; renderStatus();
     const id = DOC_ID;
@@ -1578,7 +1640,28 @@ function requestOnce() {
   const id = DOC_ID;
   S.mcp.callTool(DOCS, "read_doc", { documentId: id }, { cache: { staleTime: 60000, gcTime: 604800000, refresh: true } }).then((r) => DOC_ID === id && onLive({ type: "data", result: r }), (e) => DOC_ID === id && onLive({ type: "error", error: e }));
 }
+function startApiLive() {
+  const id = DOC_ID;
+  clearInterval(S.apiTimer);
+  S.live.state = "loading"; renderStatus();
+  const run = (manual) => {
+    if (DOC_ID !== id) { clearInterval(S.apiTimer); return; }
+    if (document.hidden && !manual) return;
+    apiGet({ action: "doc", id }, true).then((m) => {
+      if (DOC_ID !== id) return;
+      S.live.state = "ok"; S.live.note = ""; setSource("live", m); renderStatus(); learnTitle(id, m.title);
+      if (manual) toast("Đã kiểm tra bản mới nhất trên Google Docs");
+    }, (e) => {
+      if (DOC_ID !== id) return;
+      S.live.state = "error"; S.live.note = e.code === "api" ? apiMsg(e) : "Chưa kết nối được máy chủ Apps Script; trang sẽ thử lại sau 2 phút.";
+      renderStatus(); if (!S.model) renderMain(); if (manual) toast(S.live.note);
+    });
+  };
+  S.apiRun = run; run(); S.apiTimer = setInterval(run, 120000);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.apiRun) S.apiRun(); });
 $("refreshBtn").onclick = () => {
+  if (S.apiRun && HAS_API) { S.live.state = "loading"; renderStatus(); S.apiRun(true); return; }
   if (S.mcp) { S.live.state = "loading"; renderStatus(); S.mcp.invalidate(DOCS, "read_doc").catch(requestOnce); }
   else if (S.dbMeta) { pullDb(); toast("Đã kiểm tra bản đồng bộ mới nhất"); }
   else toast(S.live.note || "Đang xem bản lưu.");
@@ -1679,6 +1762,15 @@ $("libList").addEventListener("click", (e) => {
     inp.addEventListener("blur", () => { if (inp.isConnected) libSave(id, { name: inp.value.trim() }); });
   }
 });
+if (!IN_CLAUDE) {
+  $("apiBox").hidden = false; $("apiUrl").value = API;
+  $("apiForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const v = $("apiUrl").value.trim();
+    if (v && !/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec/.test(v)) { $("apiMsg").textContent = "Địa chỉ cần có dạng https://script.google.com/macros/s/…/exec"; return; }
+    gSet("api", v); location.reload();
+  });
+}
 $("docSwitch").onclick = openLib;
 $("addBtn").onclick = openLib;
 $("libClose").onclick = closeLib;
