@@ -31,6 +31,7 @@ Trình đọc Google Docs nhiều tab và thư mục Google Drive, dựng cho kh
   - phóng to bằng 2 ngón;
   - Esc để đóng.
   File đã tải được giữ trong bộ nhớ, nên quay lại xem tiếp ngay. File trong thư mục xổ xuống từ tài liệu cũng mở bằng khung này.
+- **Đăng nhập Google trên bản web.** Mỗi người xem được cả những file chỉ chia sẻ riêng cho họ (xem mục "Đăng nhập Google trên bản web").
 - **Lịch sử riêng từng người.** Lịch sử tài liệu và thư mục lưu trên trình duyệt (localStorage), người khác không thấy. "Xuất danh sách" và "Nhập danh sách" (file JSON) dùng để chuyển sang máy khác hoặc gửi bộ link cho đồng nghiệp. Tài liệu dự án gốc luôn được ghim sẵn.
 - **Tiện ích đọc:** chế độ sáng/tối (mặc định sáng), ẩn/hiện thanh điều hướng, chỉnh cỡ chữ, phím tắt.
 
@@ -70,6 +71,28 @@ Máy chủ chỉ trả về những gì đang chia sẻ **"Bất kỳ ai có đ�
 7. Dán địa chỉ đó vào `config.js` (trường `api`) rồi đẩy lên GitHub. Cách khác: dán vào ô *Máy chủ cho bản web* trong cửa sổ "Đổi tài liệu" của trang (chỉ lưu trên trình duyệt đó).
 
 Chưa cài máy chủ thì bản web vẫn hiển thị bản lưu `snapshot.json`, và link mở bằng trình xem nhúng của Google, YouTube, Canva, Facebook. Thư mục có trong `drive-index.json` vẫn mở từng cấp ngay trong trang. File này là bản quét tạo từ trang Claude: Thư viện tài nguyên → "Tải file cho bản web". Thư mục chưa có trong bản quét sẽ hiện bằng trình xem nhúng của Google Drive.
+
+### Đăng nhập Google trên bản web
+
+Không phải file nào cũng chia sẻ công khai. Có nút **Đăng nhập** thì mỗi người vào trang tự đăng nhập Google của mình. Trang gọi thẳng Google Drive API và Google Docs API bằng tài khoản đó, nên:
+- người xem thấy đúng những file, thư mục **được chia sẻ cho chính họ**, không ai thấy hơn quyền của mình;
+- tài liệu Google Docs đọc trực tiếp, có đủ tab, tự cập nhật mỗi 2 phút;
+- thư mục xổ từng cấp, ảnh, PDF, video, Sheets, Slides mở trong khung xem lớn, giống bản Claude;
+- quyền chỉ là **xem** (`drive.readonly`, `documents.readonly`). Mã truy cập lưu trên trình duyệt khoảng 1 giờ rồi hết hạn. "Đăng xuất" thu hồi mã ngay.
+
+Chưa đăng nhập thì trang chạy như cũ: bản lưu, bản quét `drive-index.json`, trình xem nhúng của Google.
+
+**Cài đặt (khoảng 10 phút, làm một lần), tại https://console.cloud.google.com:**
+1. Tạo dự án mới, ví dụ `kho-tai-lieu`.
+2. **APIs & Services → Library**: bật **Google Drive API** và **Google Docs API**.
+3. **Google Auth Platform** (OAuth consent screen) → *Get started*. Tên ứng dụng: `Kho tài liệu dự án`; email hỗ trợ: email của bạn.
+   - *Audience*: tài khoản Google Workspace của công ty → chọn **Internal**. Chỉ người trong công ty đăng nhập được, không cần Google duyệt.
+   - Gmail cá nhân → chọn **External**, để ở chế độ *Testing*, rồi thêm email từng người vào **Test users** (tối đa 100 người). Họ sẽ thấy cảnh báo "Google chưa xác minh ứng dụng này", bấm *Tiếp tục* là được.
+4. **Data access → Add or remove scopes**: thêm `.../auth/drive.readonly` và `.../auth/documents.readonly`.
+5. **Clients → Create client** → loại **Web application**. Ở *Authorized JavaScript origins* thêm `https://lequyducmanh.github.io`. Không cần *redirect URI*.
+6. Sao chép **Client ID** (dạng `….apps.googleusercontent.com`), dán vào `config.js` ở trường `googleClientId`, rồi đẩy lên GitHub.
+
+Client ID không phải mật khẩu, để công khai trong `config.js` là bình thường. Google chỉ chấp nhận nó từ địa chỉ đã khai ở bước 5.
 
 ### Tạo lại bản lưu
 
